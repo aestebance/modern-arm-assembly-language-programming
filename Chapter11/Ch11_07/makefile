@@ -1,4 +1,4 @@
-# Target, include, and object directories 
+# Target, include, and object directories prove
 TARGET = Ch11_07
 INCDIR1 = .
 INCDIR2 = ../../Include
