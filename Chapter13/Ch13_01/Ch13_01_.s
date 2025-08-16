@@ -10,8 +10,8 @@ r4_32p0:        .single 32.0
 
 // extern "C" float ConvertFtoC_(float deg_f);
 
-            .global ConvertFtoC_
-ConvertFtoC_:
+            .global _ConvertFtoC_
+_ConvertFtoC_:
 
 // Convert deg_f to Celsius
             ldr s1,r4_32p0                      // s1 = 32
@@ -22,8 +22,8 @@ ConvertFtoC_:
 
 // extern "C" float ConvertCtoF_(float deg_c);
 
-            .global ConvertCtoF_
-ConvertCtoF_:
+            .global _ConvertCtoF_
+_ConvertCtoF_:
 
 // Convert deg_c to Fahrenheit
             ldr s1,r4_32p0                      // s1 = 32

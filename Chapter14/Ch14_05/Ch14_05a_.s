@@ -16,8 +16,8 @@
             .equ NPPI,64                        // num pixels per iteration
 
             .text
-            .global ClipPixelsA_
-ClipPixelsA_:
+            .global _ClipPixelsA_
+_ClipPixelsA_:
 // Load elements from structure
             mov x7,x0                           // x7 = cd
             ldr x0,[x7,m_Des]

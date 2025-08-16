@@ -5,8 +5,8 @@
 
 // extern "C" void CompareF32_(bool* results, float a, float b);
             .text
-            .global CompareF32_
-CompareF32_:
+            .global _CompareF32_
+_CompareF32_:
 
             fcmpe s0,s1                         // compare a and b, update NZCV
 

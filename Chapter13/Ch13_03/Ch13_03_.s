@@ -5,8 +5,8 @@
 // extern "C" double CalcDist_(double x1, double y1, double z1, double x2, double y2, double z2);
 
            .text
-            .global CalcDist_
-CalcDist_:
+            .global _CalcDist_
+_CalcDist_:
 
 // Calculate distance
             fsub d0,d3,d0                       // d0 = x2 - x1

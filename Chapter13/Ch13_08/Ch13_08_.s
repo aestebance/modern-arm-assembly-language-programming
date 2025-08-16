@@ -5,8 +5,9 @@
 // extern "C" void CalcBSA_(double bsa[3], double ht, double wt);
 
             .text
-            .global CalcBSA_
-CalcBSA_:   stp lr,x19,[sp,-16]!                // push lr, x19
+            .global _CalcBSA_
+            .extern _pow
+_CalcBSA_:   stp lr,x19,[sp,-16]!                // push lr, x19
             stp d12,d13,[sp,-16]!               // push d12, d13
             stp d14,d15,[sp,-16]!               // push d14, d15
 
@@ -16,11 +17,11 @@ CalcBSA_:   stp lr,x19,[sp,-16]!                // push lr, x19
 
 // Calculate bsa[0] = 0.007184 * pow(ht, 0.725) * pow(wt, 0.425)
             ldr d1,r8_0p725
-            bl pow                              // calc pow(ht,0.725)
+            bl _pow                              // calc pow(ht,0.725)
             fmov d14,d0                         // save result
             fmov d0,d13                         // d0 = weight
             ldr d1,r8_0p425
-            bl pow                              // calc pow(wt,0.425)
+            bl _pow                              // calc pow(wt,0.425)
             ldr d1,r8_0p007184
             fmul d2,d1,d14                      // 0.007184 * pow(ht,0.725)
             fmul d2,d2,d0                       // d2 *=  pow(wt,0.425)
@@ -29,11 +30,11 @@ CalcBSA_:   stp lr,x19,[sp,-16]!                // push lr, x19
 // Calculate bsa[1] = 0.0235 * pow(ht, 0.42246) * pow(wt, 0.51456)
             fmov d0,d12                         // d0 = height
             ldr d1,r8_0p42246
-            bl pow                              // calc pow(ht,0.42246)
+            bl _pow                              // calc pow(ht,0.42246)
             fmov d14,d0                         // save result
             fmov d0,d13                         // d0 = weight
             ldr d1,r8_0p51456
-            bl pow                              // calc pow(wt,0.51456)
+            bl _pow                              // calc pow(wt,0.51456)
             ldr d1,r8_0p0235
             fmul d2,d1,d14                      // 0.0235 * pow(ht,0.42246)
             fmul d2,d2,d0                       // d2 *= pow(wt,0.51456)

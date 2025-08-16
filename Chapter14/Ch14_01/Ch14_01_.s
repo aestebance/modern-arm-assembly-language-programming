@@ -5,8 +5,8 @@
 // extern "C" void PackedAddI16_(Vec128 x[2], const Vec128& a, const Vec128& b);
 
             .text
-            .global PackedAddI16_
-PackedAddI16_:
+            .global _PackedAddI16_
+_PackedAddI16_:
             ldr q0,[x1]                         // q0 = a
             ldr q1,[x2]                         // q1 = b
 
@@ -19,8 +19,8 @@ PackedAddI16_:
 
 // extern "C" void PackedSubI16_(Vec128 x[2], const Vec128& b, const Vec128& c);
 
-            .global PackedSubI16_
-PackedSubI16_:
+            .global _PackedSubI16_
+_PackedSubI16_:
             ldr q0,[x1]                         // q0 = a
             ldr q1,[x2]                         // q1 = b
 
@@ -33,8 +33,8 @@ PackedSubI16_:
 
 // extern "C" void PackedAddU16_(Vec128 x[2], const Vec128& a, const Vec128& b);
 
-            .global PackedAddU16_
-PackedAddU16_:
+            .global _PackedAddU16_
+_PackedAddU16_:
             ld1 {v0.8h},[x1]                    // v0 = a
             ld1 {v1.8h},[x2]                    // v1 = b
 
@@ -46,8 +46,8 @@ PackedAddU16_:
 
 // extern "C" void PackedSubU16_(Vec128 x[2], const Vec128& a, const Vec128& b);
 
-            .global PackedSubU16_
-PackedSubU16_:
+            .global _PackedSubU16_
+_PackedSubU16_:
             ld1 {v0.8h},[x1]                    // v0 = a
             ld1 {v1.8h},[x2]                    // v1 = b
 

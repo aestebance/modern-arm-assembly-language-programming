@@ -5,8 +5,8 @@
 // extern "C" bool PackedShiftA_(Vec128* x, const Vec128& a);
 
             .text
-            .global PackedShiftA_
-PackedShiftA_:
+            .global _PackedShiftA_
+_PackedShiftA_:
             ld1 {v0.8h},[x1]                    // v0 = a
 
             shl v1.8h,v0.8h,4                   // left shift
@@ -18,8 +18,8 @@ PackedShiftA_:
 
 // extern "C" bool PackedShiftB_(Vec128* x, const Vec128& a, const Vec128& b);
 
-            .global PackedShiftB_
-PackedShiftB_:
+            .global _PackedShiftB_
+_PackedShiftB_:
             ld1 {v0.8h},[x1]                    // v0 = a
             ld1 {v1.8h},[x2]                    // v1 = b (shift counts)
 
@@ -31,8 +31,8 @@ PackedShiftB_:
 
 // extern "C" bool PackedShiftC_(Vec128* x, const Vec128& a);
 
-            .global PackedShiftC_
-PackedShiftC_:
+            .global _PackedShiftC_
+_PackedShiftC_:
             ld1 {v0.8h},[x1]                    // v0 = a
 
             sshll v1.4s,v0.4h,4                 // signed left shift (low half)

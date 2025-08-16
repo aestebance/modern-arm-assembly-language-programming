@@ -5,8 +5,8 @@
 // extern "C" bool CalcTrace_(double* trace, const double* x, int nrows, int ncols);
 
             .text
-            .global CalcTrace_
-CalcTrace_:
+            .global _CalcTrace_
+_CalcTrace_:
             cmp w2,w3
             b.ne InvalidArg                     // jump if nrows != ncols
             cmp w2,0

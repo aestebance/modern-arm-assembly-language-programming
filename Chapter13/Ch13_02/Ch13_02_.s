@@ -5,8 +5,8 @@
 // extern "C" void CalcSphereAreaVolume_(double r, double* sa, double* vol);
 
             .text
-            .global CalcSphereAreaVolume_
-CalcSphereAreaVolume_:
+            .global _CalcSphereAreaVolume_
+_CalcSphereAreaVolume_:
 
 // Calculate surface area and volume
             ldr d5,r8_PI                        // d5 = PI

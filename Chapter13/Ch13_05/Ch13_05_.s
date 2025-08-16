@@ -12,8 +12,8 @@ Str3:       .asciz "fcvtzs - round to zero"
 
 // extern "C" double ConvertA_(float a, int b, unsigned int c, long long d, unsigned long long e);
 
-            .global ConvertA_
-ConvertA_:  fcvt d0,s0                          // d0 = a as F64
+            .global _ConvertA_
+_ConvertA_:  fcvt d0,s0                          // d0 = a as F64
 
             scvtf d1,w0                         // d1 = b as F64
             ucvtf d2,w1                         // d2 = c as F64
@@ -29,8 +29,8 @@ ConvertA_:  fcvt d0,s0                          // d0 = a as F64
 
 // extern "C" int ConvertB_(int* x, const char** msg_strings, double a);
 
-            .global ConvertB_
-ConvertB_:
+            .global _ConvertB_
+_ConvertB_:
 
 // Convert a to signed integer using different rounding modes
             fcvtns w2,d0                        // rm = to nearest (even)

@@ -49,7 +49,10 @@ public:
     AlignedArray(size_t size, size_t alignment)
     {
         m_Size = size;
-        m_Data = (T*)AlignedMem::Allocate(size * sizeof(T), alignment);
+        size_t raw_size = size * sizeof(T);
+        size_t padded_size = ((raw_size + alignment - 1) / alignment) * alignment;
+        m_Data = (T*)AlignedMem::Allocate(padded_size, alignment);
+
     }
 
     ~AlignedArray()

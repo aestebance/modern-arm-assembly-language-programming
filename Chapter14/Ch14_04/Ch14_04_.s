@@ -5,8 +5,8 @@
 // extern "C" bool CalcMinMaxU8_(uint8_t* x_min, uint8_t* x_max, const uint8_t* x, uint64_t n);
 
             .text
-            .global CalcMinMaxU8_
-CalcMinMaxU8_:
+            .global _CalcMinMaxU8_
+_CalcMinMaxU8_:
 
 // Validate arguments
             cmp x3,0

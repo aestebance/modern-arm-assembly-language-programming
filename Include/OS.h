@@ -1,8 +1,11 @@
 #pragma once
 #include <string>
 #include <cstdlib>
+#if defined(__APPLE__)
+#include <mach/mach.h>
+#endif
 #include <cstdint>
-#include <malloc.h>
+#include <stdlib.h>
 
 #if defined(_MSC_VER)
 #include <windows.h>
@@ -73,7 +76,26 @@ public:
         rc = GlobalMemoryStatusEx(&ms);
         *mem_size = (rc) ? ms.ullAvailPhys : 0ULL;
 
-#elif defined (__GNUG__)
+#elif defined(__APPLE__)
+        // macOS implementation using Mach APIs
+        mach_port_t host_port = mach_host_self();
+        mach_msg_type_number_t host_size = sizeof(vm_statistics64_data_t) / sizeof(integer_t);
+        vm_size_t page_size;
+        vm_statistics64_data_t vm_stat;
+
+        if (host_page_size(host_port, &page_size) == KERN_SUCCESS &&
+            host_statistics64(host_port, HOST_VM_INFO,
+                              (host_info64_t)&vm_stat, &host_size) == KERN_SUCCESS)
+        {
+            *mem_size = static_cast<unsigned long long>(vm_stat.free_count) * page_size;
+            rc = true;
+        }
+        else
+        {
+            *mem_size = 0ULL;
+        }
+
+#elif defined(__linux__)
         long pages = sysconf(_SC_AVPHYS_PAGES);
         long page_size = sysconf(_SC_PAGE_SIZE);
         rc = (pages != -1 && page_size != -1);
@@ -85,6 +107,7 @@ public:
 
         return rc;
     }
+
 
     static bool IsX32(void)
     {

@@ -5,8 +5,8 @@
 // extern "C" bool CalcMeanStdev_(double* mean, double* stdev, const double* x, int n);
 
             .text
-            .global CalcMeanStdev_
-CalcMeanStdev_:
+            .global _CalcMeanStdev_
+_CalcMeanStdev_:
             cmp w3,2                            // is n < 2?
             b.lt InvalidArg                     // jump if n < 2
 

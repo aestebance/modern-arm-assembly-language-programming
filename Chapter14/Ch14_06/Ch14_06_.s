@@ -14,8 +14,8 @@
             .equ m_PixelSd,40
 
             .text
-            .global CalcImageStats_
-CalcImageStats_:
+            .global _CalcImageStats_
+_CalcImageStats_:
 
 // Load and validate values in im_stats struct
             mov x7,x0
