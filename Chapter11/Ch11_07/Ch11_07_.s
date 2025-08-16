@@ -1,3 +1,4 @@
+// clang++ -std=c++17 -O0 -g -arch arm64 Ch11_07.cpp Ch11_07_Misc.cpp Ch11_07_.s -o ch11_07
 //-------------------------------------------------
 //               Ch11_07_.s
 //-------------------------------------------------
@@ -5,8 +6,8 @@
 // extern "C" void BitwiseOpsA_(uint32_t* x, uint32_t a, uint32_t b);
 
             .text
-            .global BitwiseOpsA_
-BitwiseOpsA_:
+            .global _BitwiseOpsA_
+_BitwiseOpsA_:
 
 // Perform various bitwise logical operations
             and w3,w1,w2                        // a AND b
@@ -21,8 +22,8 @@ BitwiseOpsA_:
 
 // extern "C" void BitwiseOpsB_(uint32_t* x, uint32_t a);
 
-            .global BitwiseOpsB_
-BitwiseOpsB_:
+            .global _BitwiseOpsB_
+_BitwiseOpsB_:
 
             and w2,w1,0x0000ff00                // a AND 0x0000ff00
             str w2,[x0]
