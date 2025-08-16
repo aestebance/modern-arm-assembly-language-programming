@@ -15,8 +15,8 @@
             .equ LOCAL_VAR_SIZE,32              // size of local var space
 
             .text
-            .global LocalVars_
-LocalVars_:
+            .global _LocalVars_
+_LocalVars_:
 
 // Prologue
             stp x19,x20,[sp,-16]!               // push x19 and x20
@@ -28,8 +28,8 @@ LocalVars_:
             str w8,[sp,TEMP0]                   // save temp0
 
 // Calculate temp1
-            ldr x19,=g_Val1                     // x19 points to g_Val1
-            ldr w19,[x19]                       // w19 = g_Val1
+            adrp x9, _g_Val1@PAGE
+            ldr w19, [x9, _g_Val1@PAGEOFF]
             sub w8,w3,w19                       // w8 = d - g_Val1
             str w8,[sp,TEMP1]                   // save temp1
 
@@ -39,8 +39,8 @@ LocalVars_:
             str x8,[sp,TEMP2]                   // save temp2
 
 // Calculate temp3
-            ldr x20,=g_Val2                     // x20 points to g_Val2
-            ldr x20,[x20]                       // x20 = g_Val2
+            adrp x10, _g_Val2@PAGE               // x10 apunta a la página de _g_Val2
+            ldr x20, [x10, _g_Val2@PAGEOFF]      // x20 = g_Val2
             sub x8,x7,x20                       // x8 = h - g_Val2
             str x8,[sp,TEMP3]                   // save temp3
 

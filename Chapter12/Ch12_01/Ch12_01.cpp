@@ -62,7 +62,7 @@ int main(int argc, char** argv)
     int32_t c, i;
     int64_t d, sum1, sum2;
     int8_t e, j;
-    uint16_t short h;
+    uint16_t h;
  
     a = 10; b = -20; c = 30; d = -40;
     e = -50; f = -60; g = 70, h = 80, i = -90, j = 100;

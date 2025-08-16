@@ -1,53 +1,84 @@
-# Target, include, and object directories 
-TARGET = Ch11_04
-INCDIR1 = .
-INCDIR2 = ../../Include
-OBJDIR = obj
+# ========= Configuración general =========
+TARGET  := Ch11_04
+INCDIR1 := .
+INCDIR2 := ../../Include
+OBJDIR  := obj
 
-# include files
-CPPINCFILES1 = $(wildcard $(INCDIR1)/*.h)
-CPPINCFILES2 = $(wildcard $(INCDIR2)/*.h)
-ASMINCFILES1 = $(wildcard $(INCDIR1)/*.inc)
-ASMINCFILES2 = $(wildcard $(INCDIR2)/*.inc)
+# Detectar arquitectura de macOS (arm64 Apple Silicon / x86_64 Intel)
+ARCH := $(shell uname -m)
+ifeq ($(ARCH),arm64)
+  ARCHFLAG := -arch arm64
+else ifeq ($(ARCH),x86_64)
+  ARCHFLAG := -arch x86_64
+else
+  $(warning Arquitectura no reconocida: $(ARCH). Se compilará sin -arch.)
+  ARCHFLAG :=
+endif
 
-# .cpp files in current directory   
-CPPFILES = $(wildcard *.cpp)
-CPPOBJFILES_ = $(CPPFILES:.cpp=.o)
-CPPOBJFILES = $(patsubst %, $(OBJDIR)/%, $(CPPOBJFILES_))
+# Compiladores/Ensamblador (clang/clang++)
+CC      := clang
+CXX     := clang++
+AS      := clang
 
-# .s files in current directory   
-ASMFILES = $(wildcard *.s)
-ASMOBJFILES_ = $(ASMFILES:.s=.o)
-ASMOBJFILES = $(patsubst %, $(OBJDIR)/%, $(ASMOBJFILES_))
+# Flags comunes
+WARN    := -Wall -Wextra -Wpedantic
+OPT     := -O3
+STDCPP  := -std=c++14
+DEBUG   := -g
 
-# Target object files
-OBJFILES = $(CPPOBJFILES) $(ASMOBJFILES)
+CPPINCLUDES := -I$(INCDIR1) -I$(INCDIR2)
 
-# g++ and assembler options - required
-GPPOPT = -march=armv8-a+simd -O3 -std=c++14 -Wall
-ASMOPT = -march=armv8-a+simd
+CXXFLAGS := $(ARCHFLAG) $(OPT) $(STDCPP) $(WARN) $(DEBUG) $(CPPINCLUDES)
+CFLAGS   := $(ARCHFLAG) $(OPT) -std=c11 $(WARN) $(DEBUG) $(CPPINCLUDES)
 
-# g++ and assembler options - optional (uncomment to enable)
-DEBUG = -g
-LISTFILE_CPP = -Wa,-aghl=$(OBJDIR)/$(basename $<).lst -save-temps=$(OBJDIR)
-LISTFILE_ASM = -aghlms=$(OBJDIR)/$(basename $<).lst
+# Ensamblador LLVM integrado:
+# - Para .s (sin preprocesado C): pasar includes al ensamblador: -Wa,-I<dir>
+# - Para .S (con preprocesado C): usar -I<dir> normales
+ASFLAGS_s  := $(ARCHFLAG) $(DEBUG) -x assembler -Wa,-I$(INCDIR1) -Wa,-I$(INCDIR2)
+ASFLAGS_S  := $(ARCHFLAG) $(DEBUG) -x assembler-with-cpp $(CPPINCLUDES)
 
-# Create directory for object and temp files
-MKOBJDIR := $(shell mkdir -p $(OBJDIR))
+# ========= Descubrimiento de fuentes =========
+CPPINCFILES1 := $(wildcard $(INCDIR1)/*.h)
+CPPINCFILES2 := $(wildcard $(INCDIR2)/*.h)
+ASMINCFILES1 := $(wildcard $(INCDIR1)/*.inc)
+ASMINCFILES2 := $(wildcard $(INCDIR2)/*.inc)
 
-# Build rules
+CPPFILES     := $(wildcard *.cpp)
+CPPOBJFILES_ := $(CPPFILES:.cpp=.o)
+CPPOBJFILES  := $(patsubst %, $(OBJDIR)/%, $(CPPOBJFILES_))
+
+# Soportar tanto .s (asm puro) como .S (asm con preprocesador)
+ASMFILES_s     := $(wildcard *.s)
+ASMFILES_S     := $(wildcard *.S)
+ASMOBJFILES_s_ := $(ASMFILES_s:.s=.o)
+ASMOBJFILES_S_ := $(ASMFILES_S:.S=.o)
+ASMOBJFILES_s  := $(patsubst %, $(OBJDIR)/%, $(ASMOBJFILES_s_))
+ASMOBJFILES_S  := $(patsubst %, $(OBJDIR)/%, $(ASMOBJFILES_S_))
+
+OBJFILES := $(CPPOBJFILES) $(ASMOBJFILES_s) $(ASMOBJFILES_S)
+
+# Crear carpeta de objetos si no existe
+$(shell mkdir -p $(OBJDIR))
+
+# ========= Enlazado =========
 $(TARGET): $(OBJFILES)
-	g++ $(OBJFILES) -o $(TARGET)
+	$(CXX) $(ARCHFLAG) $(OBJFILES) -o $(TARGET)
 
-# Note: full recompiles/assembles on any include file changes
+# ========= Reglas de compilación =========
+# Nota: recompila si cambian includes
 $(OBJDIR)/%.o: %.cpp $(CPPINCFILES1) $(CPPINCFILES2)
-	g++ $(DEBUG) $(LISTFILE_CPP) $(GPPOPT) -I$(INCDIR1) -I$(INCDIR2) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+# .s -> asm puro (sin preprocesado C)
 $(OBJDIR)/%.o: %.s $(ASMINCFILES1) $(ASMINCFILES2)
-	as  $(DEBUG) $(LISTFILE_ASM) $(ASMOPT) -I$(INCDIR1) -I$(INCDIR2) $< -o $@
+	$(AS) $(ASFLAGS_s) -c $< -o $@
 
-.PHONY:	clean
+# .S -> asm con preprocesado C (#include, macros, etc.)
+$(OBJDIR)/%.o: %.S $(ASMINCFILES1) $(ASMINCFILES2) $(CPPINCFILES1) $(CPPINCFILES2)
+	$(AS) $(ASFLAGS_S) -c $< -o $@
 
+# ========= Utilidades =========
+.PHONY: clean
 clean:
 	rm -f $(TARGET)
 	rm -rf $(OBJDIR)

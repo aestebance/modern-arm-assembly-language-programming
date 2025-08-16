@@ -5,8 +5,8 @@
 // extern "C" int CalcArraySumA_(const int* x, int n);
 
             .text
-            .global CalcArraySumA_
-CalcArraySumA_:
+            .global _CalcArraySumA_
+_CalcArraySumA_:
 
             mov w2,0                            // sum = 0
             cmp w1,w0                           // is n <= 0?
@@ -23,8 +23,8 @@ DoneA:      mov w0,w2                           // w0 = final sum
 
 // extern "C" uint64_t CalcArraySumB_(const uint64_t* x, uint32_t n);
 
-            .global CalcArraySumB_
-CalcArraySumB_:
+            .global _CalcArraySumB_
+_CalcArraySumB_:
 
             mov x2,0                            // sum = 0
             cmp w1,0                            // is n == 0?

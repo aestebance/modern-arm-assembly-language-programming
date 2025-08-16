@@ -1,3 +1,4 @@
+// clang++ -std=c++17 -O0 -g -arch arm64 Ch11_06.cpp Ch11_06_Misc.cpp Ch11_06_.s -o ch11_06
 //-------------------------------------------------
 //               Ch11_06_Misc.cpp
 //-------------------------------------------------
@@ -7,6 +8,7 @@
 #include <bitset>
 #include <string>
 #include <cstdint>
+#include <sstream>
 
 using namespace std;
 

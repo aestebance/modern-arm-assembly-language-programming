@@ -5,8 +5,8 @@
 // extern "C" bool CompareSumA_(int32_t a, int32_t b, int32_t c, int32_t* sum);
 
             .text
-            .global CompareSumA_
-CompareSumA_:
+            .global _CompareSumA_
+_CompareSumA_:
 
 // Calculate a + b + c and save sum
             add w0,w0,w1                        // w0 = a + b
@@ -25,8 +25,8 @@ SumGE100:   mov w0,#1                           // set return code to true
 
 // extern "C" bool CompareSumB_(int64_t a, int64_t b, int64_t c, int64_t* sum);
 
-            .global CompareSumB_
-CompareSumB_:
+            .global _CompareSumB_
+_CompareSumB_:
 
 // Calculate a + b + c and save sum
             add x0,x0,x1                        // x0 = a + b
@@ -43,8 +43,8 @@ SumGT0:     mov w0,#1                           // set return code to true
 
 // extern "C" bool CompareSumC_(int32_t a, int32_t b, int32_t c, int32_t* sum);
 
-            .global CompareSumC_
-CompareSumC_:
+            .global _CompareSumC_
+_CompareSumC_:
             adds w4,w0,w1                       // w4 = a + b
             cset w5,vs                          // w5 = 1 on overflow
 

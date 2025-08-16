@@ -6,9 +6,9 @@
 //    const int64_t* x, int nrows, int ncols);
 
             .text
-            .global CalcMatrixRowColSums_
+            .global _CalcMatrixRowColSums_
 
-CalcMatrixRowColSums_:
+_CalcMatrixRowColSums_:
             cmp w3,0
             b.le Error                          // jump if nrows <= 0
             cmp w4,0

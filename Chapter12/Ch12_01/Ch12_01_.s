@@ -9,8 +9,8 @@
             .equ ARG_J,8                       // stack offset for arg j
 
             .text
-            .global SumCubes_
-SumCubes_:
+            .global _SumCubes_
+_SumCubes_:
             ldrsw x8,[SP,ARG_I]                 // x8 = i (sign-extended)
             ldrsb x9,[SP,ARG_J]                 // x9 = j (sign-extended)
 

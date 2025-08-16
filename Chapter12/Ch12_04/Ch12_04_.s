@@ -48,8 +48,8 @@ SumSquaresB_:
 
             .equ LOCAL_VAR_SPACE,32             // local variable space
 
-            .global SumSquares_
-SumSquares_:
+            .global _SumSquares_
+_SumSquares_:
 // Function prologue
             sub sp,sp,LOCAL_VAR_SPACE           // allocate local var space
 
