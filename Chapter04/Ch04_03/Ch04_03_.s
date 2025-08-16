@@ -1,43 +1,53 @@
 //-------------------------------------------------
-//               Ch04_03_.s
+//               Ch04_03_.s (ARM64 / macOS)
 //-------------------------------------------------
 
 // extern "C" void CalcMatrixSquares_(int* y, const int* x, int m, int n);
+// Transforma una matriz x[n][m] en su traspuesta con elementos al cuadrado y la guarda en y[m][n]
 
-            .text
-            .global CalcMatrixSquares_
-CalcMatrixSquares_:
-            push {r4-r8}
+        .text
+        .p2align 2
+        .globl _CalcMatrixSquares_
+_CalcMatrixSquares_:
+        // x0 = y (int*)
+        // x1 = x (const int*)
+        // w2 = m
+        // w3 = n
 
-            cmp r2,#0
-            ble Done                            // jump if m <= 0
-            cmp r3,#0
-            ble Done                            // jump if n <= 0
+        stp     x19, x20, [sp, #-16]!      // Save callee-saved
+        stp     x21, x22, [sp, #-16]!      // More registers
 
-            mov r4,#0                           // i = 0
+        cmp     w2, #0
+        ble     .Ldone                     // if m <= 0 return
 
-Loop1:      mov r5,#0                           // j = 0
+        cmp     w3, #0
+        ble     .Ldone                     // if n <= 0 return
 
-Loop2:      mov r6,r5                           // r6 = j
-            mul r6,r6,r2                        // r6 = j * m
-            add r6,r6,r4                        // kx = j * m + i
-            ldr r7,[r1,r6,lsl #2]               // r7 = x[kx] (x[j][i])
+        mov     w19, #0                    // i = 0
 
-            mul r7,r7,r7                        // r7 = x[j][i] * x[j][i]
+.Louter:                                    // Loop1: for i in 0..m-1
+        mov     w20, #0                    // j = 0
 
-            mov r8,r4                           // r8 = i
-            mul r8,r8,r3                        // r8 = i * n
-            add r8,r8,r5                        // ky = i * n + j
-            str r7,[r0,r8,lsl #2]               // save y[ky] (y[i][j])
+.Linner:                                    // Loop2: for j in 0..n-1
+        mul     w21, w20, w2               // w21 = j * m
+        add     w21, w21, w19              // w21 = kx = j * m + i
+        ldr     w22, [x1, w21, SXTW #2]    // w22 = x[kx] = x[j][i]
 
-            add r5,#1                           // j += 1
-            cmp r5,r3
-            blt Loop2                           // jump if j < n
+        mul     w22, w22, w22              // square: w22 = x[j][i]²
 
-            add r4,#1                           // i += 1
-            cmp r4,r2
-            blt Loop1                           // jump if i < m
-    
-Done:       pop {r4-r8}
-            bx lr
+        mul     w21, w19, w3               // w21 = i * n
+        add     w21, w21, w20              // w21 = ky = i * n + j
+        str     w22, [x0, w21, SXTW #2]    // y[ky] = square
 
+        add     w20, w20, #1
+        cmp     w20, w3
+        blt     .Linner
+
+        add     w19, w19, #1
+        cmp     w19, w2
+        blt     .Louter
+
+.Ldone:
+        ldp     x21, x22, [sp], #16
+        ldp     x19, x20, [sp], #16
+        ret

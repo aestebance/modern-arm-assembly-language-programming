@@ -1,66 +1,66 @@
 //------------------------------------------------
-//               Ch02_05_.s
+//               Ch02_05_.s  (arm64 / macOS)
 //------------------------------------------------
 
 // extern "C" int MoveImmA_(void);
 
-            .text
-            .global MoveImmA_
-MoveImmA_:
-
-// Move immediate examples using unsigned integers
-            mov r0,#25                          // r0 = 25
-            mov r1,#1000                        // r1 = 1000
-
-            mov r2,#1001                        // movw r2,#1001
-            mov r3,#50000                       // movw r3,#50000
-            bx lr
+        .text
+        .p2align 2
+        .globl _MoveImmA_
+_MoveImmA_:
+        // Move immediate examples using unsigned integers
+        mov     w0, #25              // w0 = 25
+        mov     w1, #1000            // w1 = 1000
+        mov     w2, #1001            // w2 = 1001
+        mov     w3, #50000           // w3 = 50000
+        ret
 
 // extern "C" int MoveImmB_(void);
 
-            .global MoveImmB_
-MoveImmB_:
+        .p2align 2
+        .globl _MoveImmB_
+_MoveImmB_:
+        // Valid 32-bit immediate (in range of MOVZ)
+        mov     w0, #260096          // w0 = 260096
 
-// Move immediate example - 32-bit unsigned integers
-            mov r0,#260096                      // r0 = 260096
+        // mov w1, #260097  -- invalid directly, so:
+        // Alternative using MOVZ + MOVK
+        movz    w1, #0xf801          // lower 16 bits
+        movk    w1, #0x0003, lsl #16 // upper 16 bits —> 0x0003f801 = 260097
 
-// Move immediate example - invalid constant after fixup error
+        // Same with bitwise math
+        movz    w2, #(260097 & 0xffff)
+        movk    w2, #(260097 >> 16), lsl #16
 
-//          mov r1,#260097                      // invalid constant
-
-// Alternative move immediate examples 
-            movw r1,#0xf801
-            movt r1,#0x0003                     // r1 = 260097
-
-            movw r2,#(260097 & 0xffff)
-            movt r2,#(260097 >> 16)             // r2 = 260097
-
-            ldr r3,=#260097                     // r3 = 260097
-            bx lr
-
+        // Load from literal pool (32-bit)
+        adrp    x3, _lit260097@PAGE
+        ldr     w3, [x3, _lit260097@PAGEOFF]
+        ret
 
 // extern "C" int MoveImmC_(void);
 
-            .global MoveImmC_
-MoveImmC_:
+        .p2align 2
+        .globl _MoveImmC_
+_MoveImmC_:
+        // Immediate signed (within range)
+        mov     w0, #-57             // w0 = -57
+        mov     w1, #-6401           // w1 = -6401
 
-// Move immediate examples - negative numbers
-            mov r0,#-57                         // mvn r0,#56
-            mov r1,#-6401                       // mvn r1,#6400
+        // Alternative for -1000
+        movz    w2, #(0xfffffc18 & 0xffff)
+        movk    w2, #0xffff, lsl #16 // w2 = -1000 (0xfffffc18)
 
-// Move immediate example - invalid constant after fixup error
+        // Literal
+        adrp    x3, _litm1000@PAGE
+        ldr     w3, [x3, _litm1000@PAGEOFF]
 
-//          mov r1,#-1000                       // invalid constant
+        // Alternative via two's complement
+        movz    w4, #(0xfc18 & 0xFFFF)
+        movk    w4, #(0xFFFF), lsl #16
+        ret
 
-// Alternative move immediate examples 
-            movw r0,#0xfc18
-            movt r0,#0xffff                     // r0 = -1000
-
-            movw r1,#(-1000 & 0xffff)
-            movt r1,#(-1000 >> 16)              // r1 = -1000
-
-            ldr r2,=#-1000                      // r2 = -1000
-
-            mvn r3,#1000
-            add r3,#1                           // r3 = -1000
-            bx lr
+// Literal data section
+        .data
+        .p2align 2
+_lit260097:    .word 260097
+_litm1000:     .word -1000

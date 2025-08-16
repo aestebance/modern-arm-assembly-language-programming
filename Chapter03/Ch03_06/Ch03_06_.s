@@ -1,85 +1,85 @@
 //------------------------------------------------
-//               Ch03_06_.s
+//               Ch03_06_.s (ARM64 / macOS)
 //------------------------------------------------
 
 // extern "C" void CalcSum_(int n, int* sum1, int* sum2);
 
-            .equ SAVE_N,0                        // offset for save of n
-            .equ SAVE_SUM1,4                     // offset for save of sum1
-            .equ SAVE_SUM2,8                     // offset for save of sum2
+        .text
+        .p2align 2
+        .globl _CalcSum_
+_CalcSum_:
+        // x0 = n, x1 = sum1*, x2 = sum2*
 
-            .equ ARG_N_MIN,1                    // argument n minimum value
-            .equ ARG_N_MAX,1023                 // argument n maximum value
+        stp     x29, x30, [sp, #-16]!      // save frame pointer and lr
+        stp     x19, x20, [sp, #-16]!      // save x19 (sum1 ptr), x20 (sum2 ptr)
+        mov     x29, sp
 
-            .text
-            .global CalcSum_
-CalcSum_:
+        mov     x19, x1                   // x19 = sum1*
+        mov     x20, x2                   // x20 = sum2*
 
-// Function prologue
-            push {lr}                           // save lr
-            sub sp,#12                          // allocate local var space
+        // Reset *sum1 and *sum2 to 0
+        mov     w3, wzr
+        str     w3, [x19]
+        str     w3, [x20]
 
-// Save arguments to stack
-            str r0,[sp,#SAVE_N]                 // save arg n
-            str r1,[sp,#SAVE_SUM1]              // save arg sum1
-            str r2,[sp,#SAVE_SUM2]              // save arg sum2
+        // if (n < 1 || n > 1023) return;
+        cmp     w0, #1
+        blt     .Ldone
+        cmp     w0, #1023
+        bgt     .Ldone
 
-// Set sum1 and sum2 to zero
-            mov r3,#0
-            str r3,[r1]                         // sum1 = 0
-            str r3,[r2]                         // sum2 = 0
+        mov     w21, w0                  // Save n in w21
 
-// Verify n >= ARG_N_MIN && n <= ARG_N_MAX
-            cmp r0,#ARG_N_MIN
-            blt Done                            // jump if n < ARG_N_MIN
-            mov r3,#ARG_N_MAX
-            cmp r0,r3
-            bgt Done                            // jump if n > ARG_N_MAX
+        // call CalcSum1_(n)
+        bl      _CalcSum1_
+        str     w0, [x19]                // store result in *sum1
 
-// Calculate sum1
-            bl CalcSum1_
-            ldr r1,[sp,#SAVE_SUM1]
-            str r0,[r1]                         // save sum1
+        mov     w0, w21                  // restore n
+        bl      _CalcSum2_
+        str     w0, [x20]                // store result in *sum2
 
-// Calculate sum2
-            ldr r0,[sp,#SAVE_N]
-            bl CalcSum2_
-            ldr r1,[sp,#SAVE_SUM2]
-            str r0,[r1]                         // save sum2
+.Ldone:
+        ldp     x19, x20, [sp], #16
+        ldp     x29, x30, [sp], #16
+        ret
 
-// Function epilogue
-Done:       add sp,#12                          // release local var space
-            pop {pc}                            // return
 
-// int static CalcSum1_(int n);
+//------------------------------------------------
+//               static int CalcSum1_(int n);
+//------------------------------------------------
 
-CalcSum1_:
+        .globl _CalcSum1_
+_CalcSum1_:
+        // w0 = n
+        mov     w1, #1                  // i = 1
+        mov     w2, #0                  // sum = 0
 
-// Calculate sum1 using for-loop
-            mov r1,#1                           // i = 1
-            mov r2,#0                           // sum = 0
+.Lloop1:
+        mul     w3, w1, w1              // w3 = i * i
+        add     w2, w2, w3              // sum += i * i
+        add     w1, w1, #1              // i++
+        cmp     w1, w0
+        ble     .Lloop1
 
-Loop1:      mla r2,r1,r1,r2                     // sum += i * i
-            add r1,#1                           // i += 1
+        mov     w0, w2                  // return sum
+        ret
 
-            cmp r1,r0
-            ble Loop1                           // jump if i <= n
 
-            mov r0,r2                           // r0 = final sum1
-            bx lr
+//------------------------------------------------
+//               static int CalcSum2_(int n);
+//------------------------------------------------
 
-// int CalcSum2_(int n);
+        .globl _CalcSum2_
+_CalcSum2_:
+        // w0 = n
+        add     w1, w0, #1              // w1 = n + 1
+        mul     w2, w0, w1              // w2 = n * (n + 1)
 
-CalcSum2_:
+        lsl     w3, w0, #1              // w3 = 2 * n
+        add     w3, w3, #1              // w3 = 2n + 1
 
-// Calculate sum2 = (n * (n + 1) * (2 * n + 1)) / 6
-            add r1,r0,#1                        // r1 = n + 1
-            mul r2,r0,r1                        // r2 = n * (n + 1)
+        mul     w3, w3, w2              // w3 = n*(n+1)*(2n+1)
+        mov     w1, #6
+        sdiv    w0, w3, w1              // w0 = result
 
-            lsl r3,r0,#1                        // r3 = 2 * n
-            add r3,#1                           // r3 = 2 * n + 1
-            mul r3,r3,r2                        // r3 = dividend
-
-            mov r1,#6                           // r1 = divisor
-            sdiv r0,r3,r1                       // r0 = final sum2
-            bx lr
+        ret

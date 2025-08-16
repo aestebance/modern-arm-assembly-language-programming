@@ -1,64 +1,80 @@
 //-------------------------------------------------
-//               Ch04_04_.s
+//               Ch04_04_.s (ARM64 / macOS)
 //-------------------------------------------------
 
 // extern "C" bool CalcMatrixRowColSums_(int* row_sums, int* col_sums, const int* x, int nrows, int ncols);
 
-            .text
-            .global CalcMatrixRowColSums_
+        .text
+        .p2align 2
+        .globl _CalcMatrixRowColSums_
+_CalcMatrixRowColSums_:
+        // x0 = row_sums
+        // x1 = col_sums
+        // x2 = x (input matrix)
+        // w3 = nrows
+        // w4 = ncols
 
-            .equ ARG_NCOLS,32
+        stp     x19, x20, [sp, #-16]!     // Save callee-saved regs
+        stp     x21, x22, [sp, #-16]!
+        stp     x23, x24, [sp, #-16]!
+        stp     x25, x26, [sp, #-16]!
 
-CalcMatrixRowColSums_:
-            push {r4-r11}
+        // Check nrows > 0
+        cmp     w3, #0
+        ble     .Lfail
 
-            cmp r3,#0
-            movle r0,#0                         // set error return code
-            ble Done                            // jump if nrows <= 0
+        // Check ncols > 0
+        cmp     w4, #0
+        ble     .Lfail
 
-            ldr r4,[sp,#ARG_NCOLS]
-            cmp r4,#0
-            movle r0,#0                         // set error return code
-            ble Done                            // jump if ncols <= 0
+        // Zero-out col_sums
+        mov     w19, #0                   // j = 0
+.LzeroCols:
+        str     wzr, [x1, w19, SXTW #2]
+        add     w19, w19, #1
+        cmp     w19, w4
+        blt     .LzeroCols
 
-// Set elements of col_sums to zero
-            mov r5,r1                           // r5 = col_sums
-            mov r6,r4                           // r6 = ncols
-            mov r7,#0
+        // Main processing loops
+        mov     w19, #0                   // i = 0
+.LrowLoop:
+        mov     w20, #0                   // j = 0
+        mov     w21, #0                   // row_sum_temp = 0
 
-Loop0:      str r7,[r5],#4                      // col_sums[j] = 0
-            subs r6,#1                          // j -= 1
-            bne Loop0                           // jump if j != 0
+        // row offset = i * ncols
+        mul     w22, w19, w4
 
-// Main processing loops
-            mov r5,#0                           // i = 0
+.LcolLoop:
+        add     w23, w22, w20             // index = i*ncols + j
+        ldr     w24, [x2, w23, SXTW #2]   // x[i][j]
 
-Loop1:      mov r6,#0                           // j = 0
-            mov r12,#0                          // row_sums_temp = 0
-            mul r7,r5,r4                        // r7 = i * ncols
+        add     w21, w21, w24             // row_sum_temp += x[i][j]
 
-Loop2:      add r8,r7,r6                        // r8 = i * ncols + j
-            ldr r9,[r2,r8,lsl #2]               // r9 = x[i][j]
+        // col_sums[j] += x[i][j]
+        ldr     w25, [x1, w20, SXTW #2]
+        add     w25, w25, w24
+        str     w25, [x1, w20, SXTW #2]
 
-// Update row_sums and col_sums using current x[i][j]
-            add r12,r12,r9                      // row_sums_temp += x[i][j]
+        add     w20, w20, #1              // j++
+        cmp     w20, w4
+        blt     .LcolLoop
 
-            add r10,r1,r6,lsl #2                // r10 = ptr to col_sums[j]
-            ldr r11,[r10]                       // r11 = col_sums[j]
-            add r11,r11,r9                      // col_sums[j] += x[i][j]
-            str r11,[r10]                       // save col_sums[j]
+        // Store row_sum_temp
+        str     w21, [x0, w19, SXTW #2]
 
-            add r6,r6,#1                        // j += 1
-            cmp r6,r4
-            blt Loop2                           // jump if j < ncols
+        add     w19, w19, #1              // i++
+        cmp     w19, w3
+        blt     .LrowLoop
 
-            str r12,[r0],#4                     // save row_sums[i]
+        mov     w0, #1                    // success
+        b       .Ldone
 
-            add r5,r5,#1                        // i += 1
-            cmp r5,r3
-            blt Loop1                           // jump if i < nrows
+.Lfail:
+        mov     w0, #0                    // failure
 
-            mov r0,#1                           // set success return code
-
-Done:       pop {r4-r11}
-            bx lr
+.Ldone:
+        ldp     x25, x26, [sp], #16
+        ldp     x23, x24, [sp], #16
+        ldp     x21, x22, [sp], #16
+        ldp     x19, x20, [sp], #16
+        ret

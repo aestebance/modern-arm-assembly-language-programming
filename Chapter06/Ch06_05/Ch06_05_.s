@@ -1,52 +1,51 @@
 //-------------------------------------------------
-//               Ch06_05_.s
+//               Ch06_05_.s (ARM64 / macOS)
 //-------------------------------------------------
 
-// extern "C" Rm GetRm_(void);
+// extern "C" int GetRm_(void);
+        .text
+        .globl _GetRm_
+_GetRm_:
+        // read FPCR (Floating-point Control Register)
+        mrs     x1, fpcr
+        lsr     x2, x1, #22
+        and     w0, w2, #3         // extract rounding mode (bits [23:22])
+        ret
 
-            .text
-            .global GetRm_
-GetRm_:     vmrs r1,fpscr                       // r1 = fpscr
-            lsr r2,r1,#22
-            and r0,r2,#3                        // RMode in bits 1:0
-            bx lr
-
-// extern "C" void SetRm_(Rm rm);
-
-            .global SetRm_
-SetRm_:     vmrs r1,fpscr                       // r1 = fpscr
-            bfi r1,r0,#22,#2                    // insert new RMode bits
-            vmsr fpscr,r1                       // save updated fpscr
-            bx lr
+// extern "C" void SetRm_(int rm);
+        .globl _SetRm_
+_SetRm_:
+        // read, update, and write FPCR
+        mrs     x1, fpcr
+        bfi     x1, x0, #22, #2    // insert rm into bits [23:22]
+        msr     fpcr, x1
+        ret
 
 // extern "C" int ConvertA_(double a);
-
-            .global ConvertA_
-ConvertA_:  vcvtr.s32.f64 s0,d0                 // convert a to signed int
-            vmov r0,s0                          // copy result to r0
-            bx lr
+        .globl _ConvertA_
+_ConvertA_:
+        frint32z d1, d0            // convert double to int (round toward zero)
+        fcvtzs w0, d1              // convert double to signed int
+        ret
 
 // extern "C" double ConvertB_(int a, unsigned int b);
-
-            .global ConvertB_
-ConvertB_:  vmov s0,r0                          // s0 = a
-            vcvt.f64.s32 d1,s0                  // convert a to double
-
-            vmov s1,r1                          // s1 = b
-            vcvt.f64.u32 d2,s1                  // convert b to double
-            
-            vadd.f64 d0,d1,d2                   // d0 = a + b
-            bx lr
+        .globl _ConvertB_
+_ConvertB_:
+        scvtf d1, w0               // convert a (int) to double
+        ucvtf d2, w1               // convert b (uint) to double
+        fadd   d0, d1, d2          // d0 = a + b
+        ret
 
 // extern "C" float ConvertC_(double a, float b, double c, float d);
+        .globl _ConvertC_
+_ConvertC_:
+        fcvt   d3, s1              // b (float) → double
+        fcvt   d4, s3              // d (float) → double
 
-            .global ConvertC_
-ConvertC_:  vcvt.f64.f32 d3,s2                  // convert b to double
-            vcvt.f64.f32 d4,s3                  // convert d to double
+        fadd   d5, d0, d3          // d5 = a + (double)b
+        fsub   d6, d2, d4          // d6 = c - (double)d
+        fdiv   d7, d5, d6          // d7 = result
 
-            vadd.f64 d5,d0,d3                   // Perform arithmetic
-            vsub.f64 d6,d2,d4                   // using doubles
-            vdiv.f64 d7,d5,d6
+        fcvt   s0, d7              // result (double) → float (return)
+        ret
 
-            vcvt.f32.f64 s0,d7                  // Convert result to float
-            bx lr

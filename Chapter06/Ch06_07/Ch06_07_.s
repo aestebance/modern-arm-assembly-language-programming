@@ -1,39 +1,46 @@
 //-------------------------------------------------
-//               Ch06_07_.s
+//               Ch06_07_.s (ARM64 / macOS)
 //-------------------------------------------------
 
-            .text
+        .text
+        .p2align 2
+
 r8_zero:    .double 0.0
 
 // extern "C" bool CalcTrace_(double* trace, const double* x, int nrows, int ncols);
 
-            .global CalcTrace_
-CalcTrace_: push {r4,r5}
-            cmp r2,r3
-            bne InvalidArg                      // jump if nrows != ncols
-            cmp r2,#0
-            ble InvalidArg                      // jump if nrows <= 0
+        .globl _CalcTrace_
+_CalcTrace_:
+        // x0 = trace*
+        // x1 = x[] (matrix base)
+        // w2 = nrows
+        // w3 = ncols
 
-// Calculate trace
-            vldr.f64 d0,r8_zero                 // sum = 0.0
-            mov r4,#0                           // i = 0
+        cmp     w2, w3
+        b.ne    .LInvalidArg        // if nrows != ncols -> error
+        cmp     w2, #0
+        b.le    .LInvalidArg        // if nrows <= 0 -> error
 
-Loop1:      mul r5,r4,r3                        // r5 = i * ncols
-            add r5,r5,r4                        // r5 = i * ncols + i
-            add r5,r1,r5,lsl #3                 // r5 = ptr to x[i][i]
+        ldr     d0, r8_zero         // d0 = 0.0 (sum)
+        mov     w4, #0              // i = 0
 
-            vldr.f64 d1,[r5]                    // d1 = x[i][i]
-            vadd.f64 d0,d0,d1                   // sum += x[i][i]
+.Lloop:
+        mul     w5, w4, w3          // w5 = i * ncols
+        add     w5, w5, w4          // w5 = i * ncols + i
+        lsl     x5, x5, #3          // x5 = offset in bytes (8 bytes per double)
+        add     x5, x1, x5          // x5 = &x[i][i]
 
-            add r4,#1                           // i += 1
-            cmp r4,r2 
-            blt Loop1                           // jump if not done
+        ldr     d1, [x5]            // d1 = x[i][i]
+        fadd    d0, d0, d1          // sum += x[i][i]
 
-            vstr.f64 d0,[r0]                    // save trace value
+        add     w4, w4, #1
+        cmp     w4, w2
+        b.lt    .Lloop
 
-            mov r0,#1                           // set success return code
-Done:       pop {r4,r5}
-            bx lr
+        str     d0, [x0]            // *trace = sum
+        mov     w0, #1              // return true
+        ret
 
-InvalidArg: mov r0,#0                           // set error return code
-            b Done
+.LInvalidArg:
+        mov     w0, #0              // return false
+        ret

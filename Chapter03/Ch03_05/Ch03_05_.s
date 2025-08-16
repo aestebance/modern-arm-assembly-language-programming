@@ -1,63 +1,64 @@
 //------------------------------------------------
-//               Ch03_05_.s
+//               Ch03_05_.s  (ARM64 / macOS)
 //------------------------------------------------
 
-// extern "C" bool CompareSumA_(int a, int b, int c, int* sum);
+// extern "C" bool CompareSumA_(int a, int b, int c, int* sum)
 
-            .text
-            .global CompareSumA_
-CompareSumA_:
+        .text
+        .p2align 2
+        .globl _CompareSumA_
+_CompareSumA_:
+        // x0 = a, x1 = b, x2 = c, x3 = sum (int*)
 
-// Calculate a + b + c and save sum
-            add r0,r0,r1                        // r0 = a + b
-            add r0,r0,r2                        // r0 = a + b + c
-            str r0,[r3]                         // save sum
+        add     w0, w0, w1              // w0 = a + b
+        add     w0, w0, w2              // w0 = a + b + c
+        str     w0, [x3]                // store sum
 
-// Is sum >= 100?
-            cmp r0,#100                         // Compare sum and 100
-            bge SumGE100                        // jump if sum >= 100
+        cmp     w0, #100
+        b.ge    1f                      // if sum >= 100, return true
+        mov     w0, #0                  // false
+        ret
+1:      mov     w0, #1                  // true
+        ret
 
-            mov r0,#0                           // set return code to false
-            bx lr
+// extern "C" bool CompareSumB_(int a, int b, int c, int* sum)
 
-SumGE100:   mov r0,#1                           // set return code to true
-            bx lr
+        .p2align 2
+        .globl _CompareSumB_
+_CompareSumB_:
+        add     w0, w0, w1              // w0 = a + b
+        adds    w0, w0, w2              // w0 = a + b + c, update flags
+        str     w0, [x3]                // store sum
 
+        b.gt    1f                      // if sum > 0, return true
+        mov     w0, #0                  // false
+        ret
+1:      mov     w0, #1                  // true
+        ret
 
-// extern "C" bool CompareSumB_(int a, int b, int c, int* sum);
+// extern "C" bool CompareSumC_(int a, int b, int c, int* sum)
 
-            .global CompareSumB_
-CompareSumB_:
+        .p2align 2
+        .globl _CompareSumC_
+_CompareSumC_:
+        // Save temporary registers
+        stp     x19, x20, [sp, #-16]!
 
-// Calculate a + b + c and save sum
-            add r0,r0,r1                        // r0 = a + b
-            adds r0,r0,r2                       // r0 = a + b + c
-            str r0,[r3]                         // save sum
-            bgt SumGT0                          // jump if sum > 0
+        mov     w19, w0                 // w19 = a
+        mov     w0, #0                  // return = 0 (no overflow yet)
 
-            mov r0,#0                           // set return code to false
-            bx lr
+        adds    w19, w19, w1            // w19 = a + b
+        orr     w0, w0, #1
+        b.vs    1f                      // if overflow, set w0 = 1
+        mov     w0, #0                  // no overflow so far
 
-SumGT0:     mov r0,#1                           // set return code to true
-            bx lr
+1:      adds    w20, w19, w2            // w20 = a + b + c
+        b.vs    2f                      // if overflow, set w0 = 1
+        str     w20, [x3]               // store sum
+        ldp     x19, x20, [sp], #16
+        ret
 
-// extern "C" bool CompareSumC_(int a, int b, int c, int* sum);
-
-            .global CompareSumC_
-CompareSumC_:
-
-            push {r4,r5}
-
-            mov r4,r0                           // r4 = a
-            mov r0,#0                           // r0 = 0 (no overflow)
-
-            adds r4,r4,r1                       // r4 = a + b
-            orrvs r0,#1                         // r0 = 1 if overflow
-
-            adds r5,r4,r2                       // r5 = a + b + c
-            orrvs r0,#1                         // r0 = 1 if overflow
-
-            str r5,[r3]                         // save sum
-
-            pop {r4,r5}
-            bx lr
+2:      mov     w0, #1                  // overflow occurred
+        str     w20, [x3]
+        ldp     x19, x20, [sp], #16
+        ret

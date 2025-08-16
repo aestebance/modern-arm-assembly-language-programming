@@ -1,26 +1,29 @@
 //------------------------------------------------
-//               Ch02_04_.s
+//               Ch02_04_.s  (arm64 / macOS)
 //------------------------------------------------
 
-            .data
-Foo:        .word 100, 200, 300, 400
+        .data
+        .p2align 2
+_Foo:   .word 100, 200, 300, 400
 
 // extern "C" void TestLDR_(void);
 
-            .text
-            .global TestLDR_
+        .text
+        .p2align 2
+        .globl _TestLDR_
+_TestLDR_:
+        adrp    x1, _Foo@PAGE           // x1 = page base address of _Foo
+        add     x1, x1, _Foo@PAGEOFF    // x1 = full address of _Foo
 
-TestLDR_:   ldr r1,=Foo                         // r1 = address of Foo
+        ldr     w2, [x1]                // w2 = Foo[0]
+        ldr     w3, [x1, #4]            // w3 = Foo[1]
 
-            ldr r2,[r1]                         // r2 = Foo[0]
-            ldr r3,[r1,#4]                      // r3 = Foo[1]
+        add     w0, w2, w3              // w0 = Foo[0] + Foo[1]
 
-            add r0,r2,r3                        // r0 = Foo[0] + Foo[1]
+        ldr     w2, [x1, #8]            // w2 = Foo[2]
+        add     w0, w0, w2              // w0 += Foo[2]
 
-            ldr r2,[r1,#8]                      // r2 = Foo[2]
-            add r0,r0,r2                        // r0 += Foo[2]
+        ldr     w2, [x1, #12]           // w2 = Foo[3]
+        add     w0, w0, w2              // w0 += Foo[3]
 
-            ldr r2,[r1,#12]                     // r2 = Foo[3]
-            add r0,r0,r2                        // r0 += Foo[3]
-
-            bx lr                               // return to caller
+        ret

@@ -1,49 +1,68 @@
 //------------------------------------------------
-//               Ch02_06_.s
+//               Ch02_06_.s (arm64 / macOS)
 //------------------------------------------------
 
-// extern "C" void MoveRegA_(void a, unsigned int* b);
+// extern "C" void MoveRegA_(unsigned int a, unsigned int* b);
 
-            .text
-            .global MoveRegA_
-MoveRegA_:
-            push {r4-r7}
+        .text
+        .p2align 2
+        .globl _MoveRegA_
+_MoveRegA_:
+        // x0 = a
+        // x1 = b (uint32_t*)
 
-// Register to register move
-            mov r7,r1                           // copy value in r1 to r7
+        // Guardar w19–w22 (equivalentes temporales a r4–r7)
+        stp     x19, x20, [sp, #-16]!
+        stp     x21, x22, [sp, #-16]!
 
-// Register moves with shift/rotate operator
-            mov r2,r0,asr #2                    // arithmetic shift right
-            mov r3,r0,lsl #4                    // logical shift left
-            mov r4,r0,lsr #5                    // logical shift right
-            mov r5,r0,ror #3                    // rotate right
-            mov r6,r0,rrx                       // rotate right extended
+        mov     x22, x1              // x22 = b
 
-            str r2,[r7]                         // save asr result to b[0]
-            str r3,[r7,#4]                      // save lsl result to b[1]
-            str r4,[r7,#8]                      // save lsr result to b[2]
-            str r5,[r7,#12]                     // save ror result to b[3]
-            str r6,[r7,#16]                     // save rrx result to b[4]
+        // Shift/rotate operations
+        asr     w2, w0, #2           // w2 = a >> 2 (arithmetic)
+        lsl     w3, w0, #4           // w3 = a << 4
+        lsr     w4, w0, #5           // w4 = a >> 5 (logical)
+        ror     w5, w0, #3           // w5 = rotate right by 3
 
-            pop {r4-r7}
-            bx lr
+        // No RRX in ARM64 — emulate or skip
+        // For now, we'll store 0 in w6 as placeholder
+        mov     w6, wzr              // zero register (placeholder)
+
+        // Store results to b[0] to b[4]
+        str     w2, [x22]            // b[0]
+        str     w3, [x22, #4]        // b[1]
+        str     w4, [x22, #8]        // b[2]
+        str     w5, [x22, #12]       // b[3]
+        str     w6, [x22, #16]       // b[4] (rrx placeholder)
+
+        // Restaurar registros
+        ldp     x21, x22, [sp], #16
+        ldp     x19, x20, [sp], #16
+        ret
 
 // extern "C" void MoveRegB_(unsigned int a, unsigned int* b, unsigned int count);
 
-            .global MoveRegB_
-MoveRegB_:
-            push {r4-r6}
+        .p2align 2
+        .globl _MoveRegB_
+_MoveRegB_:
+        // x0 = a
+        // x1 = b
+        // x2 = count
 
-// Register moves with shift/rotate operator
-            mov r3,r0,asr r2                    // arithmetic shift right
-            mov r4,r0,lsl r2                    // logical shift left
-            mov r5,r0,lsr r2                    // logical shift right
-            mov r6,r0,ror r2                    // rotate right
+        stp     x19, x20, [sp, #-16]!
+        stp     x21, x22, [sp, #-16]!
 
-            str r3,[r1]                         // save asr result to b[0]
-            str r4,[r1,#4]                      // save lsl result to b[1]
-            str r5,[r1,#8]                      // save lsr result to b[2]
-            str r6,[r1,#12]                     // save ror result to b[3]
+        // Shift/rotate operations with register shift
+        asr     w3, w0, w2           // arithmetic shift right
+        lsl     w4, w0, w2           // logical shift left
+        lsr     w5, w0, w2           // logical shift right
+        ror     w6, w0, w2           // rotate right
 
-            pop {r4-r6}
-            bx lr
+        // Store results
+        str     w3, [x1]             // b[0]
+        str     w4, [x1, #4]         // b[1]
+        str     w5, [x1, #8]         // b[2]
+        str     w6, [x1, #12]        // b[3]
+
+        ldp     x21, x22, [sp], #16
+        ldp     x19, x20, [sp], #16
+        ret

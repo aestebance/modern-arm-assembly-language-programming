@@ -1,16 +1,15 @@
-//------------------------------------------------
-//               Ch02_01_.s
-//------------------------------------------------
+// ------------------------------------------------
+//               Ch02_01_.s  (arm64 / macOS)
+// ------------------------------------------------
 
-// extern "C" int IntegerAddSub_(int a, int b int c, int d);
+// extern "C" int IntegerAddSub_(int a, int b, int c, int d);
 
-            .text
-            .global IntegerAddSub_
-IntegerAddSub_:
-
-// Calculate a + b + c - d
-            add r0,r0,r1                        // r0 = a + b
-            add r0,r0,r2                        // r0 = a + b + c
-            sub r0,r0,r3                        // r0 = a + b + c - d
-
-            bx lr                               // return to caller
+        .text
+        .globl _IntegerAddSub_
+        .p2align 2
+_IntegerAddSub_:
+        // a, b, c, d llegan en w0, w1, w2, w3 (ABI arm64)
+        add     w0, w0, w1        // w0 = a + b
+        add     w0, w0, w2        // w0 = a + b + c
+        sub     w0, w0, w3        // w0 = a + b + c - d
+        ret                       // volver al llamador

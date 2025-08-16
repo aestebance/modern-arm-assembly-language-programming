@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <bitset>
 #include <string>
+#include <sstream>
 
 using namespace std;
 

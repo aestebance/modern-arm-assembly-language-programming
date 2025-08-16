@@ -1,31 +1,31 @@
 //------------------------------------------------
-//               Ch02_02_.s
+//               Ch02_02_.s  (arm64 / macOS)
 //------------------------------------------------
 
 // extern "C" int IntegerMulA_(int a, int b);
 
-            .text
-            .global IntegerMulA_
-IntegerMulA_:
-
-// Calculate a * b and save result
-            mul r0,r0,r1                        // calc a * b (32-bit)
-            bx lr
+        .text
+        .p2align 2
+        .globl _IntegerMulA_
+_IntegerMulA_:
+        // w0 = a, w1 = b
+        mul     w0, w0, w1          // (int) a * b
+        ret
 
 // extern "C" long long IntegerMulB_(int a, int b);
 
-            .global IntegerMulB_
-IntegerMulB_:
-
-// Calculate a * b and save result
-            smull r0,r1,r0,r1                   // calc a * b (signed 64-bit)
-            bx lr
+        .p2align 2
+        .globl _IntegerMulB_
+_IntegerMulB_:
+        // w0 = a, w1 = b ; devuelve 64-bit en x0
+        smull   x0, w0, w1          // (int64_t) a * b (signed)
+        ret
 
 // extern "C" unsigned long long IntegerMulC_(unsigned int a, unsigned int b);
 
-            .global IntegerMulC_
-IntegerMulC_:
-
-// Calculate a * b and save result
-            umull r0,r1,r0,r1                   // calc a * b (unsigned 64-bit)
-            bx lr
+        .p2align 2
+        .globl _IntegerMulC_
+_IntegerMulC_:
+        // w0 = a, w1 = b ; devuelve 64-bit en x0
+        umull   x0, w0, w1          // (uint64_t) a * b (unsigned)
+        ret

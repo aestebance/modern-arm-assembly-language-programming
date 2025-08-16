@@ -1,59 +1,55 @@
 //------------------------------------------------
-//               Ch02_07_.s
+//               Ch02_07_.s  (ARM64 / macOS)
 //------------------------------------------------
 
 // extern "C" void TestBitOpsA_(unsigned int a, unsigned int b, unsigned int* c);
 
-            .text
-            .global TestBitOpsA_
-TestBitOpsA_:
-            push {r4,r5}
+        .text
+        .p2align 2
+        .globl _TestBitOpsA_
+_TestBitOpsA_:
+        // x0 = a, x1 = b, x2 = c (output array)
 
-            and r3,r0,r1                        // a AND b
-            str r3,[r2]
+        stp     x19, x20, [sp, #-16]!
 
-            orr r4,r0,r1                        // a OR b
-            str r4,[r2,#4]
+        and     w3, w0, w1             // w3 = a & b
+        str     w3, [x2]               // c[0]
 
-            eor r5,r0,r1                        // a EOR b
-            str r5,[r2,#8]
+        orr     w4, w0, w1             // w4 = a | b
+        str     w4, [x2, #4]           // c[1]
 
-            pop {r4,r5}
-            bx lr
+        eor     w5, w0, w1             // w5 = a ^ b
+        str     w5, [x2, #8]           // c[2]
 
-
-.int 100
-.long 200
-.word - 100
-
-.quad -1000
-.octa -2000
-
+        ldp     x19, x20, [sp], #16
+        ret
 
 // extern "C" void TestBitOpsB_(unsigned int a, unsigned int* b);
 
-            .global TestBitOpsB_
-TestBitOpsB_:
+        .p2align 2
+        .globl _TestBitOpsB_
+_TestBitOpsB_:
+        // x0 = a, x1 = b (output array)
 
-            push {r4-r7}
+        stp     x19, x20, [sp, #-16]!
+        stp     x21, x22, [sp, #-16]!
 
-            and r2,r0,#0x0000ff00               // a AND 0x0000ff00
-            str r2,[r1]
+        and     w2, w0, #0x0000ff00     // a & 0x0000ff00
+        str     w2, [x1]                // b[0]
 
-            orr r3,r0,#0x00ff0000               // a OR 0x00ff0000
-            str r3,[r1,#4]
+        orr     w3, w0, #0x00ff0000     // a | 0x00ff0000
+        str     w3, [x1, #4]            // b[1]
 
-            eor r4,r0,#0xff000000               // a EOR 0xff000000
-            str r4,[r1,#8]
+        eor     w4, w0, #0xff000000     // a ^ 0xff000000
+        str     w4, [x1, #8]            // b[2]
 
-// removing comment generates invalid constant after fixup error
+        // Cannot do: and w5, w0, #0x00ffff00  (invalid constant)
+        // Instead, construct 0x00ffff00 manually in a register
+        movz    w5, #0xff00
+        movk    w5, #0x00ff, lsl #16    // w5 = 0x00ffff00
+        and     w6, w0, w5              // a & 0x00ffff00
+        str     w6, [x1, #12]           // b[3]
 
-//          and r5,r0,#0x00ffff00               // invalid constant
-
-            movw r5,#0xff00
-            movt r5,#0x00ff                      // r5 = 0x00ffff00
-            and r6,r0,r5                        // a AND 0x00ffff00
-            str r6,[r1,#12]
-
-            pop {r4-r7}
-            bx lr
+        ldp     x21, x22, [sp], #16
+        ldp     x19, x20, [sp], #16
+        ret

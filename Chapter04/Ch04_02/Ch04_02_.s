@@ -1,41 +1,49 @@
 //-------------------------------------------------
-//               Ch04_02_.s
+//               Ch04_02_.s (ARM64 / macOS)
 //-------------------------------------------------
 
-// extern "C" int32_t CalcZ_(int32_t* z const int8_t* x, const int16_t* y, int32_t n);
+// extern "C" int32_t CalcZ_(int32_t* z, const int8_t* x, const int16_t* y, int32_t n);
 
-            .text
-            .global CalcZ_
-CalcZ_:     push {r4-r9}
+        .text
+        .p2align 2
+        .globl _CalcZ_
+_CalcZ_:
+        // x0 = z (int32_t*)
+        // x1 = x (int8_t*)
+        // x2 = y (int16_t*)
+        // w3 = n
 
-            mov r4,#0                           // sum = 0
-            cmp r3,#0
-            ble Done                            // jump if n <= 0
+        stp     x19, x20, [sp, #-16]!      // Save callee-saved regs
+        stp     x21, x22, [sp, #-16]!      // Additional regs
 
-            ldr r5,=g_Val1
-            ldr r5,[r5]                         // r5 = g_Val1
+        mov     w19, wzr                   // w19 = sum = 0
+        cmp     w3, #0
+        ble     .Ldone
 
-            ldr r6,=g_Val2
-            ldr r6,[r6]                         // r6 = g_Val2
+        // Load g_Val1 and g_Val2
+        adrp    x20, _g_Val1@PAGE
+        ldr     w20, [x20, _g_Val1@PAGEOFF]    // w20 = g_Val1
 
-// Main processing loop
-Loop1:      ldrsb r7,[r1],#1                    // r7 = x[i]
-            ldrsh r8,[r2],#2                    // r8 = y[i]
+        adrp    x21, _g_Val2@PAGE
+        ldr     w21, [x21, _g_Val2@PAGEOFF]    // w21 = g_Val2
 
-            cmp r7,#0                           // is x[i] < 0?
+.Lloop:
+        ldrsb   w4, [x1], #1               // w4 = x[i]; x++
+        ldrsh   w5, [x2], #2               // w5 = y[i]; y++
 
-            mullt r9,r8,r5                      // temp = y[i] * g_Val1
-                                                // (if x[i] < 0)
+        cmp     w4, #0
+        csel    w6, w20, w21, lt           // w6 = (x[i] < 0) ? g_Val1 : g_Val2
+        mul     w7, w5, w6                 // w7 = y[i] * val
 
-            mulge r9,r8,r6                      // temp = y[i] * g_Val2
-                                                // (if x[i] >= 0)
+        str     w7, [x0], #4               // z[i] = w7; z++
+        add     w19, w19, w7               // sum += w7
 
-            add r4,r4,r9                        // sum += temp
-            str r9,[r0],#4                      // save result z[i]
+        subs    w3, w3, #1
+        b.ne    .Lloop
 
-            subs r3,#1                          // n -= 1
-            bne Loop1                           // repeat until done
+.Ldone:
+        mov     w0, w19                    // return sum
 
-Done:       mov r0,r4                           // r0 = final sum
-            pop {r4-r9}
-            bx lr
+        ldp     x21, x22, [sp], #16
+        ldp     x19, x20, [sp], #16
+        ret

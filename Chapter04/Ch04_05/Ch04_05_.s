@@ -1,101 +1,64 @@
 //-------------------------------------------------
-//               Ch04_05_.s
+//               Ch04_05_.s (ARM64/macOS)
 //-------------------------------------------------
 
 // extern "C" void ReverseArrayA_(int* y, const int* x, int n);
 
-            .text
-            .global ReverseArrayA_
-ReverseArrayA_:
-              push {r4-r11}
+        .text
+        .align 2
+        .globl _ReverseArrayA_
+_ReverseArrayA_:
+        stp     x29, x30, [sp, #-16]!
+        mov     x29, sp
 
-// Initialize
-            add r1,r1,r2,lsl #2
-            sub r1,#4                           // r1 points to x[n - 1]
-            cmp r2,#4
-            blt SkipLoopA                       // jump if n < 4
+        // x0 = y, x1 = x, w2 = n
+        cbz     w2, .done_a
 
-// Main loop
-LoopA:      ldmda r1!,{r4-r7}                   // r4 = *r1
-                                                // r5 = *(r1 - 4)
-                                                // r6 = *(r1 - 8)
-                                                // r7 = *(r1 - 12)
-                                                // r1 -= 16
+        // x1 = x + 4 * (n - 1)
+        mov     w3, w2
+        subs    w3, w3, #1
+        lsl     x1, x1, #0     // keep x1 as base address
+        add     x1, x1, w3, SXTW #2
 
-            mov r8,r7                           // reorder elements in
-            mov r9,r6                           // r4 - r7 for use with
-            mov r10,r5                          // stmia instruction
-            mov r11,r4
+.loop_a:
+        ldr     w4, [x1], #-4     // w4 = x[n - 1 - i]
+        str     w4, [x0], #4      // store to y[i]
+        subs    w2, w2, #1
+        b.gt    .loop_a
 
-            stmia r0!,{r8-r11}                  // *r0 = r8
-                                                // *(r0 + 4) = r9
-                                                // *(r0 + 8) = r10
-                                                // *(r0 + 12) = r11
-                                                // r0 += 16
+.done_a:
+        ldp     x29, x30, [sp], #16
+        ret
 
-            sub r2,#4                           // n -= 4
-            cmp r2,#4
-            bge LoopA                           // jump if n >= 4 
-
-// Process remaining (0 - 3) array elements
-SkipLoopA:  cmp r2,#0
-            ble DoneA                           // jump if no more elements
-
-            ldr r4,[r1],#-4                     // load single element from x
-            str r4,[r0],#4                      // save element to y
-            subs r2,#1                          // n -= 1
-            beq DoneA                           // jump if n == 0
-
-            ldr r4,[r1],#-4                     // load single element from x
-            str r4,[r0],#4                      // save element to y
-            subs r2,#1                          // n -= 1
-            beq DoneA                           // jump if n == 0
-
-            ldr r4,[r1]                         // load final element from x
-            str r4,[r0]                         // save final element to y
-
-DoneA:      pop {r4-r11}
-            bx lr
-
-
+//-------------------------------------------------
 // extern "C" void ReverseArrayB_(int* x, int n);
+//-------------------------------------------------
 
-            .global ReverseArrayB_
-ReverseArrayB_:
-            push {r4-r11}
+        .globl _ReverseArrayB_
+_ReverseArrayB_:
+        stp     x29, x30, [sp, #-16]!
+        mov     x29, sp
 
-// Initialize
-            mov r2,r1                           // r2 = n
-            add r1,r0,r2,lsl #2
-            sub r1,#4                           // r1 points to x[n - 1]
-            cmp r2,#4
-            blt SkipLoopB                       // jump if n < 4
+        // x0 = x, w1 = n
+        cbz     w1, .done_b
 
-LoopB:      ldmia r0,{r4,r5}                    // r4 = *r0, r5 = *(r0 + 4)
-            ldmda r1,{r6,r7}                    // r6 = *r1, r7 = *(r1 - 4)
+        mov     w2, #0               // i = 0
+        mov     w3, w1
+        subs    w3, w3, #1           // j = n - 1
 
-            mov r8,r7                           // reorder elements
-            mov r9,r6                           // for use with stmia and
-            mov r10,r5                          // stmda instructions
-            mov r11,r4
+.loop_b:
+        cmp     w2, w3
+        b.ge    .done_b              // if i >= j, done
 
-            stmia r0!,{r8,r9}                   // *r0 = r8, *(r0 + 4) = r9, r0 += 8
-            stmda r1!,{r10,r11}                 // *r1 = r10, *(r1 - 4) = r11, r1 -= 8
+        ldr     w4, [x0, w2, SXTW #2]    // temp = x[i]
+        ldr     w5, [x0, w3, SXTW #2]    // x[j]
+        str     w5, [x0, w2, SXTW #2]    // x[i] = x[j]
+        str     w4, [x0, w3, SXTW #2]    // x[j] = temp
 
-            sub r2,#4                           // n -= 4
-            cmp r2,#4
-            bge LoopB                           // jump if n >= 4 
+        add     w2, w2, #1
+        sub     w3, w3, #1
+        b       .loop_b
 
-// Process remaining (0 - 3) array elements
-SkipLoopB:  cmp r2,#1
-            ble DoneB                           // jump if done
-
-            ldr r4,[r0]                         // load final element
-            ldr r5,[r1]                         // pair into r4:r5
-
-            str r4,[r1]                         // save elements
-            str r5,[r0] 
-
-DoneB:      pop {r4-r11}
-            bx lr
-
+.done_b:
+        ldp     x29, x30, [sp], #16
+        ret

@@ -1,28 +1,34 @@
 //------------------------------------------------
-//               Ch02_03_.s
+//               Ch02_03_.s  (arm64 / macOS)
 //------------------------------------------------
 
 // extern "C" void CalcQuoRem_(const int* a, const int* b, int* quo, int* rem);
 
-            .text
-            .global CalcQuoRem_
-CalcQuoRem_:
+        .text
+        .p2align 2
+        .globl _CalcQuoRem_
+_CalcQuoRem_:
+        // Argumentos en arm64:
+        // x0 = a (int*)
+        // x1 = b (int*)
+        // x2 = quo (int*)
+        // x3 = rem (int*)
 
-// Save non-volatile registers
-            push {r4,r5}                            // save r4 and r5 on stack
+        // Save non-volatile registers (we'll use x19, x20)
+        stp     x19, x20, [sp, #-16]!     // push x19 and x20
 
-// Load a and b
-            ldr r4,[r0]                             // r4 = a (dividend)
-            ldr r5,[r1]                             // r5 = b (divisor)
+        ldr     w19, [x0]                 // w19 = *a (dividend)
+        ldr     w20, [x1]                 // w20 = *b (divisor)
 
-// Calculate quotient and remainder
-            sdiv r0,r4,r5                           // r0 = quotient
-            str r0,[r2]                             // save quotient
+        // Quotient
+        sdiv    w4, w19, w20              // w4 = w19 / w20
+        str     w4, [x2]                  // *quo = quotient
 
-            mul r1,r0,r5                            // r1 = quotient * b
-            sub r2,r4,r1                            // r2 = a - quotient * b
-            str r2,[r3]                             // save remainder
+        // Remainder
+        mul     w5, w4, w20               // w5 = quotient * b
+        sub     w6, w19, w5               // w6 = a - (quotient * b)
+        str     w6, [x3]                  // *rem = remainder
 
-// Restore non-volatile registers and return
-            pop {r4,r5}                             // restore r4 & r5
-            bx lr                                   // return to caller
+        // Restore registers and return
+        ldp     x19, x20, [sp], #16       // pop x19 and x20
+        ret

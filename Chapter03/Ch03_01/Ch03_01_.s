@@ -1,38 +1,46 @@
 //------------------------------------------------
-//               Ch03_01_.s
+//               Ch03_01_.s  (ARM64 / macOS)
 //------------------------------------------------
 
 // extern "C" int SumSquares_(int a, int b, int c, int d, int e,
-//      int f, int g);
+//                            int f, int g);
 
-            .equ ARG_E,0                        // stack offset for e
-            .equ ARG_F,4                        // stack offset for f
-            .equ ARG_G,8                        // stack offset for g
+        .equ ARG_E, 0              // stack offset for e
+        .equ ARG_F, 8              // stack offset for f (aligned to 8)
+        .equ ARG_G, 16             // stack offset for g
 
-            .text
-            .global SumSquares_
-SumSquares_:
+        .text
+        .p2align 2
+        .globl _SumSquares_
+_SumSquares_:
+        // x0–x3 = a, b, c, d
+        // x4–x7 = e, f, g would be used if more args passed
+        // In practice, args beyond x3 go on the stack if more than 8 total args (including floats)
 
-            mul r0,r0,r0                        // r0 = a * a
-            mul r1,r1,r1                        // r1 = b * b
-            add r0,r0,r1                        // r0 = a * a + b * b
+        // Calculate a² + b²
+        mul     w0, w0, w0              // w0 = a * a
+        mul     w1, w1, w1              // w1 = b * b
+        add     w0, w0, w1              // w0 = a² + b²
 
-            mul r2,r2,r2                        // r2 = c * c
-            mul r3,r3,r3                        // r3 = d * d
-            add r2,r2,r3                        // r2 = c * c + d * d
+        // Add c² + d²
+        mul     w2, w2, w2              // w2 = c * c
+        mul     w3, w3, w3              // w3 = d * d
+        add     w2, w2, w3              // w2 = c² + d²
+        add     w0, w0, w2              // w0 += c² + d²
 
-            add r0,r0,r2                        // r0 = intermediate sum
+        // Load e from stack and add e²
+        ldr     w1, [sp, #ARG_E]
+        mul     w1, w1, w1
+        add     w0, w0, w1
 
-            ldr r1,[sp,#ARG_E]                  // r1 = e
-            mul r1,r1,r1                        // r1 = e * e
-            add r0,r0,r1                        // r0 = intermediate sum
+        // Load f from stack and add f²
+        ldr     w1, [sp, #ARG_F]
+        mul     w1, w1, w1
+        add     w0, w0, w1
 
-            ldr r1,[sp,#ARG_F]                  // r1 = f
-            mul r1,r1,r1                        // r1 = f * f
-            add r0,r0,r1                        // r0 = intermediate sum
+        // Load g from stack and add g²
+        ldr     w1, [sp, #ARG_G]
+        mul     w1, w1, w1
+        add     w0, w0, w1
 
-            ldr r1,[sp,#ARG_G]                  // r1 = g
-            mul r1,r1,r1                        // r1 = g * g
-            add r0,r0,r1                        // r0 = final sum
-
-            bx lr
+        ret

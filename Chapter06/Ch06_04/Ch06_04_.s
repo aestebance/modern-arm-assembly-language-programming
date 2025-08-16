@@ -1,41 +1,49 @@
 //-------------------------------------------------
-//               Ch06_04_.s
+//               Ch06_04_.s (ARM64/macOS)
 //-------------------------------------------------
 
 // extern "C" void CompareF32_(bool* results, float a, float b);
-            .text
-            .global CompareF32_
 
-CompareF32_:
-            vcmpe.f32 s0,s1                 // compare F32 values a and b
-            vmrs APSR_nzcv,fpscr            // move compare results
+        .text
+        .align 2
+        .globl _CompareF32_
+_CompareF32_:
+        // x0 = results (bool[7])
+        // s0 = a
+        // s1 = b
 
-            mov r1,#0
-            movvs r1,#1                     // r1 = 1 if unordered
-            strb r1,[r0,#0]                 // save result
+        // Clear x2 (used for false = 0)
+        mov     w2, #0
 
-            mov r1,#0
-            movlo r1,#1                     // r1 = 1 if a < b
-            strb r1,[r0,#1]                 // save result
+        // Compare a and b
+        fcmp    s0, s1
 
-            mov r1,#0
-            movls r1,#1                     // r1 = 1 if a <= b
-            strb r1,[r0,#2]                 // save result
+        // Unordered (a or b is NaN)
+        cset    w3, vs                       // unordered
+        strb    w3, [x0, #0]
 
-            mov r1,#0
-            moveq r1,#1                     // r1 = 1 if a == b
-            strb r1,[r0,#3]                 // save result
+        // a < b
+        cset    w3, lo
+        strb    w3, [x0, #1]
 
-            mov r1,#0
-            movne r1,#1                     // r1 = 1 if a != b
-            strb r1,[r0,#4]                 // save result
+        // a <= b
+        cset    w3, ls
+        strb    w3, [x0, #2]
 
-            mov r1,#0
-            movgt r1,#1                     // r1 = 1 if a > b
-            strb r1,[r0,#5]                 // save result
+        // a == b
+        cset    w3, eq
+        strb    w3, [x0, #3]
 
-            mov r1,#0
-            movge r1,#1                     // r1 = 1 if a >= b
-            strb r1,[r0,#6]                 // save result
+        // a != b
+        cset    w3, ne
+        strb    w3, [x0, #4]
 
-            bx lr
+        // a > b
+        cset    w3, hi
+        strb    w3, [x0, #5]
+
+        // a >= b
+        cset    w3, hs
+        strb    w3, [x0, #6]
+
+        ret

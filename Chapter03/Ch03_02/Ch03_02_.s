@@ -1,51 +1,68 @@
 //------------------------------------------------
-//               Ch03_02_.s
+//               Ch03_02_.s  (ARM64 / macOS)
 //------------------------------------------------
 
 // extern "C" int SumCubes_(unsigned char a, short b, int c, int d,
-//    signed char e, short f, unsigned char g, unsigned short h, int i);
+//     signed char e, short f, unsigned char g, unsigned short h, int i);
 
-            .equ ARG_E, 8                       // stack offset for e
-            .equ ARG_F, 12                      // stack offset for f
-            .equ ARG_G, 16                      // stack offset for g
-            .equ ARG_H, 20                      // stack offset for h
-            .equ ARG_I, 24                      // stack offset for i
+        .text
+        .p2align 2
+        .globl _SumCubes_
+_SumCubes_:
+        // x0 = a, x1 = b, x2 = c, x3 = d
+        // x4 = e, x5 = f, x6 = g, x7 = h
+        // [sp] = i
 
-            .text
-            .global SumCubes_
-SumCubes_:  push {r4,r5}
+        stp     x19, x20, [sp, #-16]!      // Save temp regs
 
-            mul r4,r0,r0                        // r4 = a * a
-            mul r0,r4,r0                        // r0 = a * a * a
+        // a * a * a (unsigned)
+        mul     w19, w0, w0
+        mul     w0, w19, w0
 
-            mul r4,r1,r1                        // r4 = b * b
-            mla r0,r4,r1,r0                     // r0 += b * b * b
+        // b * b * b (signed short)
+        mul     w19, w1, w1
+        mul     w19, w19, w1
+        add     w0, w0, w19
 
-            mul r4,r2,r2                        // r4 = c * c
-            mla r0,r4,r2,r0                     // r0 += c * c * c
+        // c * c * c
+        mul     w19, w2, w2
+        mul     w19, w19, w2
+        add     w0, w0, w19
 
-            mul r4,r3,r3                        // r4 = d * d
-            mla r0,r4,r3,r0                     // r0 += d * d * d
+        // d * d * d
+        mul     w19, w3, w3
+        mul     w19, w19, w3
+        add     w0, w0, w19
 
-            ldrsb r1,[sp,#ARG_E]                // r1 = e (sign-extended)
-            mul r4,r1,r1                        // r4 = e * e
-            mla r0,r4,r1,r0                     // r0 += e * e * e
+        // e * e * e (signed char)
+        sxtb    w1, w4                    // Sign-extend 8-bit
+        mul     w19, w1, w1
+        mul     w19, w19, w1
+        add     w0, w0, w19
 
-            ldrsh r1,[sp,#ARG_F]                // r1 = f (sign-extended)
-            mul r4,r1,r1                        // r4 = f * f
-            mla r0,r4,r1,r0                     // r0 += f * f * f
+        // f * f * f (signed short)
+        sxth    w1, w5                    // Sign-extend 16-bit
+        mul     w19, w1, w1
+        mul     w19, w19, w1
+        add     w0, w0, w19
 
-            ldrb r1,[sp,#ARG_G]                 // r1 = g (zero-extended)
-            mul r4,r1,r1                        // r4 = g * g
-            mla r0,r4,r1,r0                     // r0 += g * g * g
+        // g * g * g (unsigned char)
+        uxth    w1, w6                    // Zero-extend
+        mul     w19, w1, w1
+        mul     w19, w19, w1
+        add     w0, w0, w19
 
-            ldrh r1,[sp,#ARG_H]                 // r1 = h (zero-extended)
-            mul r4,r1,r1                        // r4 = h * h
-            mla r0,r4,r1,r0                     // r0 += h * h * h
+        // h * h * h (unsigned short)
+        uxth    w1, w7                    // Zero-extend
+        mul     w19, w1, w1
+        mul     w19, w19, w1
+        add     w0, w0, w19
 
-            ldr r1,[sp,#ARG_I]                  // r1 = i
-            mul r4,r1,r1                        // r4 = i * i
-            mla r0,r4,r1,r0                     // r0 += i * i * i
+        // i * i * i (int, from stack)
+        ldr     w1, [sp, #16]             // i is 9th arg, after stp
+        mul     w19, w1, w1
+        mul     w19, w19, w1
+        add     w0, w0, w19
 
-            pop {r4,r5}
-            bx lr
+        ldp     x19, x20, [sp], #16
+        ret
