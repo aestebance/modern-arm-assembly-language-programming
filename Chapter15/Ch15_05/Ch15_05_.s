@@ -7,18 +7,22 @@
 // extern "C" bool ConvertRgbToGs_(uint8_t* pb_gs, const RGB32* pb_rgb, size_t num_pixels, const float* coef);
 
             .text
-            .global ConvertRgbToGs_
-ConvertRgbToGs_:
+            .global _ConvertRgbToGs_
+            .extern _g_NumPixelsMin
+            .extern _g_NumPixelsMax
+
+
+_ConvertRgbToGs_:
 
 // Validate arguments
-            ldr x4,=g_NumPixelsMin              // make sure num_pixels
-            ldr x4,[x4]                         // is >= g_NumPixelsMin
-            cmp x2,x4
+            adrp x4, _g_NumPixelsMin@PAGE
+            ldr  x4, [x4, _g_NumPixelsMin@PAGEOFF]
+            cmp  x2, x4
             b.lo InvalidArg
 
-            ldr x4,=g_NumPixelsMax              // make sure num_pixels
-            ldr x4,[x4]                         // is <= g_NumPixelsMax
-            cmp x2,x4
+            adrp x4, _g_NumPixelsMax@PAGE
+            ldr  x4, [x4, _g_NumPixelsMax@PAGEOFF]
+            cmp  x2, x4
             b.hi InvalidArg
 
             tst x2,0x0f                         // num_pixels must be even

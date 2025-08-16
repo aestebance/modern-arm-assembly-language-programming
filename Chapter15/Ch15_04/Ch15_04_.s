@@ -24,8 +24,8 @@
 // extern "C" bool CalcCorrCoef_(float* rho, float sums[5], const float* x, const float* y, size_t n, float epsilon);
 
             .text
-            .global CalcCorrCoef_
-CalcCorrCoef_:
+            .global _CalcCorrCoef_
+_CalcCorrCoef_:
 
 // Validate arguments
             cbz x4,InvalidArg                   // jump if n == 0
@@ -77,36 +77,45 @@ SkipLoop1:  faddp v16.4s,v16.4s,v16.4s
 
 // Update sums with final elements
             cbz x4,SkipLoop2                    // jump if n == 0
-Loop2:      ldr s1,[x2],4                       // s0 = x value
-            ldr s2,[x3],4                       // s1 = y value
+Loop2:
+    ldr s1,[x2],4
+    ldr s2,[x3],4
 
-            fadd s16,s16,s1                     // update sum_x
-            fadd s17,s17,s2                     // update sum_y
-            fmla s18,s1,v1.4s[0]                // update sum_xx
-            fmla s19,s2,v2.4s[0]                // update sum_yy
-            fmla s20,s1,v2.4s[0]                // update sum_xy
+    fadd s16,s16,s1
+    fadd s17,s17,s2
+    fmul s6, s1, s1
+    fadd s18, s18, s6
 
-            subs x4,x4,1                        // n -= 1
-            b.ne Loop2
+    fmul s6, s2, s2
+    fadd s19, s19, s6
+
+    fmul s6, s1, s2
+    fadd s20, s20, s6
+
+
+    subs x4,x4,1
+    b.ne Loop2
 
 // Save sum values to sums[] array
 SkipLoop2:  stp s16,s17,[x1],8                  // save sum_x, sum_y
             stp s18,s19,[x1],8                  // save sum_xx, sum_yy
             str s20,[x1]                        // save sum_xy
 
-// Calculate rho numerator
-            scvtf s21,x5                        // s21 = n
-            fmul s1,s21,s20                     // n * sum_xy
-            fmls s1,s16,v17.4s[0]               // n * sum_xy - sum_x * sum_y
+// Calcular numerador rho
+    scvtf s21,x5
+    fmul s1,s21,s20
+    fmul s6, s16, s17    // s6 = s16 * s17
+    fsub s1, s1, s6      // s1 = s1 - s6
 
-// Calculate rho denominator
-            fmul s2,s21,s18                     // n * sum_xx
-            fmsub s2,s16,s16,s2                 // n * sum_xx - sum_x * sum_x
-            fsqrt s2,s2
-            fmul s3,s21,v19.4s[0]               // n * sum_yy
-            fmsub s3,s17,s17,s3                 // n * sum_yy - sum_y * sum_y
-            fsqrt s3,s3
-            fmul s4,s2,s3                       // s4 = rho_den
+
+// Calcular denominador rho
+    fmul s2,s21,s18
+    fmsub s2,s16,s16,s2
+    fsqrt s2,s2
+    fmul s3,s21,s19
+    fmsub s3,s17,s17,s3
+    fsqrt s3,s3
+    fmul s4,s2,s3
 
             fcmp s4,s0                          // is rho_den < epsilon?
             b.lo BadRhoDen                      // jump if yes

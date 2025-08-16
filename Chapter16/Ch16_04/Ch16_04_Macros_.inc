@@ -96,12 +96,18 @@
 // VD   d3 d2 d1 d0
 
             .macro Mat4x4TraceF32 SA, VA, VB, VC, VD, SB
+            umov w9, \VA\().s[0]
+            fmov \SA, w9
 
-            mov \SA, \VA\().4s[0]               // SA = M[0][0]
-            mov \SB, \VB\().4s[1]               // SA = M[1][1]
-            fadd \SA, \SA, \SB                  // SA += SB
-            mov \SB, \VC\().4s[2]               // SB = M[2][2]
-            fadd \SA, \SA, \SB                  // SA += SB
-            mov \SB, \VD\().4s[3]               // SB = M[3][3]
-            fadd \SA, \SA, \SB                  // SA += SB
+            umov w9, \VB\().s[1]
+            fmov \SB, w9
+            fadd \SA, \SA, \SB
+
+            umov w9, \VC\().s[2]
+            fmov \SB, w9
+            fadd \SA, \SA, \SB
+
+            umov w9, \VD\().s[3]
+            fmov \SB, w9
+            fadd \SA, \SA, \SB
             .endm

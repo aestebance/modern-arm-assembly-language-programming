@@ -5,8 +5,8 @@
 // extern "C" void PackedCompareF32_(Vec128 x[8], const Vec128& a, const Vec128& b);
 
             .text
-            .global PackedCompareF32_
-PackedCompareF32_:
+            .global _PackedCompareF32_
+_PackedCompareF32_:
             ld1 {v0.4s},[x1]                    // v0 = a
             ld1 {v1.4s},[x2]                    // v1 = b
 
@@ -37,8 +37,8 @@ PackedCompareF32_:
 
 // extern "C" void PackedCompareF64_(Vec128 x[8], const Vec128& a, const Vec128& b);
 
-            .global PackedCompareF64_
-PackedCompareF64_:
+            .global _PackedCompareF64_
+_PackedCompareF64_:
             ld1 {v0.2d},[x1]                    // v0 = a
             ld1 {v1.2d},[x2]                    // v1 = b
 

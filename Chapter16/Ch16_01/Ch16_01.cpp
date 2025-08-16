@@ -13,10 +13,12 @@
 using namespace std;
 
 // Signal and kernel size limits
-int g_NumPtsMin = 16;
-int g_NumPtsMax = 16 * 1024 * 1024;
-int g_KernelSizeMin = 3;
-int g_KernelSizeMax = 15;
+extern "C" {
+    int g_NumPtsMin = 16;
+    int g_NumPtsMax = 16 * 1024 * 1024;
+    int g_KernelSizeMin = 3;
+    int g_KernelSizeMax = 15;
+}
 unsigned int g_RngSeedVal = 97;
 
 void Convolve(void)

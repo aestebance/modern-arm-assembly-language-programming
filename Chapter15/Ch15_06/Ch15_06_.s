@@ -5,8 +5,8 @@
 // extern "C" void Mat4x4MulF32_(float* m_des, const float* m_src1, const float* m_src2);
 
             .text
-            .global Mat4x4MulF32_
-Mat4x4MulF32_:
+            .global _Mat4x4MulF32_
+_Mat4x4MulF32_:
 
 // Load m_src1 into v0:v3
             ld1 {v0.4s-v3.4s},[x1]
@@ -45,8 +45,8 @@ Mat4x4MulF32_:
 
 // extern "C" void Mat4x4MulF64_(double* m_des, const double* m_src1, const double* m_src2);
 
-            .global Mat4x4MulF64_
-Mat4x4MulF64_:
+            .global _Mat4x4MulF64_
+_Mat4x4MulF64_:
 
 // Load m_src1 into v0:v7
             ld1 {v0.4s-v3.4s},[x1],64

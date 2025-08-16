@@ -8,6 +8,9 @@
 #include "AlignedMem.h"
 #include "ImageMatrix.h"
 
+extern "C" size_t g_NumPixelsMin;
+extern "C" size_t g_NumPixelsMax;
+
 using namespace std;
 
 // Image size limits

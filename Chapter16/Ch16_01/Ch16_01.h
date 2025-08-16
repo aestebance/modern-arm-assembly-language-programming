@@ -2,6 +2,19 @@
 //               Ch16_01.h
 //------------------------------------------------
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+    extern int g_NumPtsMin;
+    extern int g_NumPtsMax;
+    extern int g_KernelSizeMin;
+    extern int g_KernelSizeMax;
+
+#ifdef __cplusplus
+}
+#endif
+
 #pragma once
 
 // Ch16_01_Misc.cpp

@@ -27,8 +27,8 @@
 // extern "C" bool MatVecMulF32_(Vec4x1F32* b, float m[4][4], Vec4x1F32* a, size_t n);
 
             .text
-            .global MatVecMulF32_
-MatVecMulF32_:
+            .global _MatVecMulF32_
+_MatVecMulF32_:
 
 // Validate arguments and perform required initializations
             cbz x3,InvalidArg                   // jump if n == 0

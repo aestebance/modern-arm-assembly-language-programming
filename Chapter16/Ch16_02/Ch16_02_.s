@@ -74,8 +74,8 @@
 // extern "C" void CrossProdAOS_(Vector* c, const Vector* a, const Vector* b, size_t n);
 
             .text
-            .global CrossProdAOS_
-CrossProdAOS_:
+            .global _CrossProdAOS_
+_CrossProdAOS_:
             cmp x3,16
             b.lo SkipLoop1A                     // skip loop if n < 16
 
@@ -108,8 +108,8 @@ DoneA:      ret
 
 // extern "C" void CrossProdSOA_(VectorSoA& c, const VectorSoA& a, const VectorSoA& b, size_t n);
 
-            .global CrossProdSOA_
-CrossProdSOA_:
+            .global _CrossProdSOA_
+_CrossProdSOA_:
             ldp x7,x8,[x1],16                   // x7,x8,x9 = 
             ldr x9,[x1]                         // a.X,a.Y,a.Z
 

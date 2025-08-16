@@ -97,7 +97,7 @@ public:
         m_DataSize = mat.m_DataSize;
         m_Data = mat.m_Data;
         m_OstreamW = mat.m_OstreamW;
-        m_OstreamDelim = m_OstreamDelim;
+        m_OstreamDelim = mat.m_OstreamDelim;
 
         mat.Cleanup();
     }

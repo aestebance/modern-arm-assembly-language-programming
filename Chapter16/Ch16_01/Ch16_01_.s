@@ -4,31 +4,36 @@
 
 // extern "C" bool ConvolveKsN_(float* y, const float* x, int num_pts, const float* kernel, int kernel_size);
 
+            .extern _g_NumPtsMin
+            .extern _g_NumPtsMax
+            .extern _g_KernelSizeMin
+            .extern _g_KernelSizeMax
+
             .text
-            .global ConvolveKsN_
-ConvolveKsN_:
+            .global _ConvolveKsN_
+_ConvolveKsN_:
 
 // Validate arguments
             tst w4,0x01
             b.eq InvalidArg1                    // jump if kernel_size is even
 
-            ldr x5,=g_KernelSizeMin
-            ldr w5,[x5]
+            adrp x5, _g_KernelSizeMin@PAGE
+            ldr  w5, [x5, _g_KernelSizeMin@PAGEOFF]
             cmp w4,w5
             b.lt InvalidArg1                    // jump if kernel_size too small
 
-            ldr x5,=g_KernelSizeMax
-            ldr w5,[x5]
+            adrp x5, _g_KernelSizeMax@PAGE
+            ldr  w5, [x5, _g_KernelSizeMax@PAGEOFF]
             cmp w4,w5
             b.gt InvalidArg1                    // jump if kernel_size too big
 
-            ldr x5,=g_NumPtsMin
-            ldr w5,[x5]
+            adrp x5, _g_NumPtsMin@PAGE
+            ldr  w5, [x5, _g_NumPtsMin@PAGEOFF]
             cmp w2,w5
             b.lt InvalidArg1                    // jump if num_pts too small
 
-            ldr x5,=g_NumPtsMax
-            ldr w5,[x5]
+            adrp x5, _g_NumPtsMax@PAGE
+            ldr  w5, [x5, _g_NumPtsMax@PAGEOFF]
             cmp w2,w5
             b.gt InvalidArg1                    // jump if num_pts too big
 
@@ -77,20 +82,20 @@ InvalidArg1:
 
 // extern "C" bool ConvolveKs5_(float* y, const float* x, int num_pts, const float* kernel, int kernel_size);
 
-            .global ConvolveKs5_
-ConvolveKs5_:
+            .global _ConvolveKs5_
+_ConvolveKs5_:
 
 // Validate arguments
             cmp w4,5
             b.ne InvalidArg2                    // jump if kernel_size != 5
 
-            ldr x5,=g_NumPtsMin
-            ldr w5,[x5]
+            adrp x5, _g_NumPtsMin@PAGE
+            ldr  w5, [x5, _g_NumPtsMin@PAGEOFF]
             cmp w2,w5
             b.lt InvalidArg2                    // jump if num_pts too small
 
-            ldr x5,=g_NumPtsMax
-            ldr w5,[x5]
+            adrp x5, _g_NumPtsMax@PAGE
+            ldr  w5, [x5, _g_NumPtsMax@PAGEOFF]
             cmp w2,w5
             b.gt InvalidArg2                    // jump if num_pts too big
 

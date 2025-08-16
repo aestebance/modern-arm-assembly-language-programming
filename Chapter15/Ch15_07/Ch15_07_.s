@@ -12,15 +12,20 @@
 // v3   d3 d2 d1 d0
 
             .macro Mat4x4TraceF32
-            mov s4,v0.4s[0]                     // s4 = m[0][0]
-            mov s5,v1.4s[1]                     // s5 = m[1][1]
-            fadd s4,s4,s5                       // s4 = m[0][0] + m[1][1]
+            umov w5, v0.s[0]
+            fmov s4, w5
 
-            mov s5,v2.4s[2]                     // s5 = m[2][2]
-            fadd s4,s4,s5                       // s4 += m[2][2]
+            umov w5, v1.s[1]
+            fmov s5, w5
+            fadd s4, s4, s5
 
-            mov s5,v3.4s[3]                     // s5 = m[3][3]
-            fadd s4,s4,s5                       // s5 = += m[3][3]
+            umov w5, v2.s[2]
+            fmov s5, w5
+            fadd s4, s4, s5
+
+            umov w5, v3.s[3]
+            fmov s5, w5
+            fadd s4, s4, s5
             .endm
 
 // Macro Mat4x4TraceF64
@@ -33,15 +38,20 @@
 // v7:v6    d3 d2 d1 d0
 
             .macro Mat4x4TraceF64
-            mov d16,v0.2d[0]                    // d16 = m[0][0]
-            mov d17,v2.2d[1]                    // d17 = m[1][1]
-            fadd d16,d16,d17                    // d16 = m[0][0] + m[1][1]
+            umov x5, v0.d[0]
+            fmov d16, x5
 
-            mov d17,v5.2d[0]                    // d17 = m[2][2]
-            fadd d16,d16,d17                    // d16 = m[0][0] + m[1][1]
+            umov x5, v2.d[1]
+            fmov d17, x5
+            fadd d16, d16, d17
 
-            mov d17,v7.2d[1]                    // d16 = m[3][3]
-            fadd d16,d16,d17                    // d17 = m[0][0] + m[1][1]
+            umov x5, v5.d[0]
+            fmov d17, x5
+            fadd d16, d16, d17
+
+            umov x5, v7.d[1]
+            fmov d17, x5
+            fadd d16, d16, d17
             .endm
 
 // Mat4x4TransposeF32
@@ -88,8 +98,8 @@
 
 // extern float Mat4x4TraceF32_(const float* m_src1);
 
-            .global Mat4x4TraceF32_
-Mat4x4TraceF32_:
+            .global _Mat4x4TraceF32_
+_Mat4x4TraceF32_:
             ld1 {v0.4s-v3.4s},[x0]              // v0:v3 = m_src1
 
             Mat4x4TraceF32                      // calculate trace
@@ -97,10 +107,10 @@ Mat4x4TraceF32_:
             fmov s0,s4
             ret
 
-// extern double Mat4x4TraceF64_(const double* m_src1);
+// extern double _Mat4x4TraceF64_(const double* m_src1);
 
-            .global Mat4x4TraceF64_
-Mat4x4TraceF64_:
+            .global _Mat4x4TraceF64_
+_Mat4x4TraceF64_:
             ld1 {v0.2d-v3.2d},[x0],64           // load m_src1 into
             ld1 {v4.2d-v7.2d},[x0]              // v0:v7
 
@@ -111,8 +121,8 @@ Mat4x4TraceF64_:
 
 // extern void Mat4x4TransposeF32_(float* m_des, const float* m_src1);
 
-            .global Mat4x4TransposeF32_
-Mat4x4TransposeF32_:
+            .global _Mat4x4TransposeF32_
+_Mat4x4TransposeF32_:
             ld1 {v0.4s-v3.4s},[x1]              // v0:v3 = m_src1
 
             Mat4x4TransposeF32                  // transpose m_src1
@@ -122,8 +132,8 @@ Mat4x4TransposeF32_:
 
 // extern void Mat4x4TransposeF64_(float* m_des, const float* m_src1);
 
-            .global Mat4x4TransposeF64_
-Mat4x4TransposeF64_:
+            .global _Mat4x4TransposeF64_
+_Mat4x4TransposeF64_:
             ld1 {v0.2d-v3.2d},[x1],64           // v0:v3 = rows 0 and 1
             ld1 {v4.2d-v7.2d},[x1]              // v4:v7 = rows 2 and 3
 

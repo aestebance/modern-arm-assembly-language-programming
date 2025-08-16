@@ -15,8 +15,8 @@ r4_4x4I:    .single 1.0, 0.0, 0.0, 0.0
 
 // extern "C" bool Mat4x4InvF32_(float* m_inv, const float* m, float epsilon);
 
-            .global Mat4x4InvF32_
-Mat4x4InvF32_:
+            .global _Mat4x4InvF32_
+_Mat4x4InvF32_:
 
 // Prologue
             stp d8,d9,[sp,-16]!             // push d8, d9

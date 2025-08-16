@@ -5,8 +5,8 @@
 // extern "C" void PackedMathF32_(Vec128 x[9], const Vec128& a, const Vec128& b);
 
             .text
-            .global PackedMathF32_
-PackedMathF32_:
+            .global _PackedMathF32_
+_PackedMathF32_:
             ld1 {v0.4s},[x1]                    // v0 = a
             ld1 {v1.4s},[x2]                    // v1 = b
 
@@ -40,8 +40,8 @@ PackedMathF32_:
 
 // extern "C" void PackedMathF64_(Vec128 x[9], const Vec128& a, const Vec128& b);
 
-            .global PackedMathF64_
-PackedMathF64_:
+            .global _PackedMathF64_
+_PackedMathF64_:
             ld1 {v0.2d},[x1]                    // v0 = a
             ld1 {v1.2d},[x2]                    // v1 = b
 
